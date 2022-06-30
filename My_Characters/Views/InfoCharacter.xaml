@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="My_Characters.Views.InfoCharacter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:My_Characters.ViewModels"
+             mc:Ignorable="d" >
+    <UserControl.Resources>
+        <local:MainWindowViewModel x:Key="myVm"/>
+    </UserControl.Resources>
+    <Grid Background="DarkOliveGreen">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem Header="Биография">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBox Text=""/>
+                        <TextBox Text=""/>
+                        <TextBox Text=""/>
+                        <TextBox Text=""/>
+                        <TextBox Text=""/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <ListView>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text=""/>
+                                        <TextBlock Text=""/>
+                                        <TextBlock Text=""/>
+                                        <TextBlock Text=""/>
+                                        <TextBlock Text=""/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Прогресс">
+                
+            </TabItem>
+            <TabItem Header="Реверенсы">
+                
+            </TabItem>
+            <TabItem Header="Файлы">
+                
+            </TabItem>
+            <TabItem Header="Рендер">
+                
+            </TabItem>
+        </TabControl>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Height="30"
+                    Width="120"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

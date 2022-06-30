@@ -1,6 +1,4 @@
-﻿using My_Characters.Context;
-using My_Characters.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,21 +16,13 @@ using System.Windows.Shapes;
 namespace My_Characters.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Логика взаимодействия для InfoCharacter.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class InfoCharacter : UserControl
     {
-        public MainWindow()
+        public InfoCharacter()
         {
             InitializeComponent();
         }
-
-        private void OpenInfoCharacter_Click(object sender, RoutedEventArgs e)
-        {
-            if (infoChatacter.Visibility == Visibility.Collapsed)
-                infoChatacter.Visibility = Visibility.Visible;
-            else infoChatacter.Visibility = Visibility.Collapsed;
-        }
-
     }
 }

@@ -12,6 +12,7 @@ namespace My_Characters.Context
 {
     internal class ApplicationContext : DbContext
     {
+        private string _connetionString;
         public DbSet<BiographyModel> Biographies { get; set; } = null!;
         public DbSet<ProgressModel> Progresses { get; set; } = null!;
         public DbSet<SourceFileModel> SourceFiles { get; set; } = null!;
@@ -21,6 +22,7 @@ namespace My_Characters.Context
         public ApplicationContext()
         {
             Database.EnsureCreated();
+           
         }
 
         private string GetConnectionString()
@@ -31,7 +33,8 @@ namespace My_Characters.Context
 
             var config = builder.Build();
 
-            return config.GetConnectionString("DefaultConnection");
+            _connetionString = config.GetConnectionString("DefaultConnection");
+            return _connetionString;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
