@@ -6,17 +6,17 @@
         xmlns:local="clr-namespace:My_Characters.ViewModels"
         xmlns:uscontrl="clr-namespace:My_Characters.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="480" Width="1200">
+        Title="MainWindow" Height="700" Width="1200">
     <Window.Resources>
         <local:MainWindowViewModel x:Key="myVM"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="150"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
@@ -30,12 +30,117 @@
         </StackPanel>
 
         <Grid Grid.Column='1' Grid.Row="1">
-            <uscontrl:InfoCharacter x:Name="infoChatacter" 
+            <!--#region // Иноформация о персонаже:-->
+            <Grid x:Name="infoChatacter" Background="DarkSlateBlue"
                                     Height="Auto" 
                                     Panel.ZIndex="1" 
-                                    Visibility="Collapsed" />
+                                    Visibility="Collapsed">
+                <TabControl>
+                    <!--#region // БИОГРАФИЯ:-->
+                    <TabItem Header="Биография" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="300"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="20"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="RightToLeft">
+                                <Button Height="20" Width="60" Content="Создать" 
+                                        Command="{Binding CreateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                <Button Height="20" Width="60" Content="Изменить" 
+                                        Command="{Binding UpdateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                <Button Height="20" Width="60" Content="Сохранить" 
+                                        Command="{Binding SaveChangesCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                <Button Height="20" Width="60" Content="Удалить" 
+                                        Command="{Binding DeleteCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <Label>Имя</Label>
+                                <TextBox x:Name="Name"
+                                         Margin="10, 0, 10, 10"
+                                         Text="{Binding Source={StaticResource myVM}, Path=NameView}"/>
+                                <Label>Фамилия</Label>
+                                <TextBox Name="LastName" 
+                                         Margin="10, 0, 10, 10"
+                                         Text="{Binding Source={StaticResource myVM}, Path=LastNameView}"/>
+                                <Label>Возраст</Label>
+                                <TextBox Name="Age" 
+                                         Margin="10, 0, 10, 10"
+                                         Text="{Binding Source={StaticResource myVM}, Path=AgeView}"/>
+                                <Label>Биография</Label>
+                                <TextBox Name="Biography" 
+                                         Margin="10, 0, 10, 10"
+                                         Height="150"
+                                         Text="{Binding Source={StaticResource myVM}, Path=BiographyView}"/>
+                                <Label>Навыки</Label>
+                                <TextBox Name="Skills" 
+                                         Margin="10, 0, 10, 10"
+                                         Height="100"
+                                         Text="{Binding Source={StaticResource myVM}, Path=SkillsView}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Grid.Row="1">
+                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=BiographyCharacterView, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock Text="Имя"/>
+                                                <TextBlock Text="{Binding Name}"/>
+
+                                                <TextBlock Text="Фамилия"/>
+                                                <TextBlock Text="{Binding LastName}"/>
+
+                                                <TextBlock Text="Возраст"/>
+                                                <TextBlock Text="{Binding Age}"/>
+
+                                                <TextBlock Text="Биография"/>
+                                                <TextBlock Text="{Binding Biography}"/>
+
+                                                <TextBlock Text="Навыки"/>
+                                                <TextBlock Text="{Binding Skills}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <!--#endregion-->
+                    
+                    <!--#region // ПРОГРЕСС:-->
+                    <TabItem Header="Прогресс">
+
+                    </TabItem>
+                    <!--#endregion-->
+                    
+                    <!--#region // РЕФЕРЕНСЫ-->
+                    <TabItem Header="Реверенсы">
+
+                    </TabItem>
+                    <!--#endregion-->
+                    
+                    <!--#region // ФАЙЛЫ:-->
+                    <TabItem Header="Файлы">
+
+                    </TabItem>
+                    <!--#endregion-->
+                    
+                    <!--#region // РЕНДЕР:-->
+                    <TabItem Header="Рендер">
+
+                    </TabItem>
+                    <!--#endregion-->
+                </TabControl>
+            </Grid>
+            <!--#endregion -->
+            
+            <!--#region // Основное меню - персонажы: -->
             <ListView HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                      ItemsSource="{Binding Source={StaticResource myVM}, Path=BiographyModelsView}">
+                      ItemsSource="{Binding Source={StaticResource myVM}, Path=CharactersView}"
+                      SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectCharacterInView}"
+                      SelectionMode="Single">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="4"
@@ -51,10 +156,15 @@
                             <TextBlock Text="{Binding Name}"/>
                             <TextBlock Text="{Binding LastName}"/>
                             <TextBlock Text="{Binding Age}"/>
+                            <Button Height="30"
+                                    Width="90"
+                                    Click="OpenInfoCharacter_Click" 
+                                    Command="{Binding GetBioCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <!--#endregion-->
         </Grid>
     </Grid>
 </Window>

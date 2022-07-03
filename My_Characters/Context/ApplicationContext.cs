@@ -22,7 +22,7 @@ namespace My_Characters.Context
         public ApplicationContext()
         {
             Database.EnsureCreated();
-           
+            //Database.EnsureDeleted();
         }
 
         private string GetConnectionString()
