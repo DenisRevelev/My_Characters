@@ -19,6 +19,8 @@ namespace My_Characters.ViewModels
         public MainWindowViewModel()
         {
             GetAllData();
+            StartView = DateTime.Now;
+            FinishView = DateTime.Now;
         }
         
         #region // Получить всех персонажей для главной страницы:
@@ -130,6 +132,16 @@ namespace My_Characters.ViewModels
                     Skills = SkillsView
                 };
                 await db.Biographies.AddAsync(createBio);
+                
+
+                var createProgress = new ProgressModel()
+                {
+                    Progress = ProgressView,
+                    StatusProgress = StatusProgeressView,
+                    Biography = createBio
+                };
+                await db.Progresses.AddAsync(createProgress);
+
                 await db.SaveChangesAsync();
             }
         }
@@ -264,6 +276,7 @@ namespace My_Characters.ViewModels
                 var bio = await db.Biographies.Where(b => b.Id == SelectCharacterInView.Id).ToListAsync();
                 BiographyCharacterView = new ObservableCollection<BiographyModel>(bio);
             }
+            await GetToDoListInProgress();
         }
         
         private RelayCommand _getBioCharacter { get; set; }
@@ -279,6 +292,124 @@ namespace My_Characters.ViewModels
         }
         #endregion
         #endregion
+
+        #region //  Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
+        #region // Общие поля:
+
+        private int _progress;
+        public int ProgressView
+        {
+            get => _progress;
+            set
+            {
+                _progress = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool _statusProgeress;
+
+        public bool StatusProgeressView
+        {
+            get => _statusProgeress;
+            set
+            {
+                _statusProgeress = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _task;
+        public string TaskView
+        {
+            get => _task;
+            set
+            {
+                _task = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private DateTime _start;
+        public DateTime StartView
+        {
+            get => _start;
+            set
+            {
+                _start = value;
+                OnPropertyChanged();
+            }
+        }
+        private DateTime _finish;
+        public DateTime FinishView
+        {
+            get => _finish;
+            set
+            {
+                _finish = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool _checkTask;
+        public bool CheckTaskView
+        {
+            get => _checkTask;
+            set
+            {
+                _checkTask = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+        private ObservableCollection<ToDoListModel> _toDoList = new ObservableCollection<ToDoListModel>();
+        public ObservableCollection<ToDoListModel> ToDoListView
+        {
+            get => _toDoList;
+            set
+            {
+                _toDoList = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+       
+        private async Task GetToDoListInProgress()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var toDo = await db.ToDoLists.Where(p => p.ProgressId == SelectCharacterInView.Id).ToListAsync();
+                ToDoListView = new ObservableCollection<ToDoListModel>(toDo);
+            }
+        }
+
+        private async Task AddTaskInProgress()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var prog = await db.Progresses.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                foreach (var item in prog)
+                {
+                    item.ToDoListNavigation = new List<ToDoListModel>() { new ToDoListModel()
+                    {
+                        Task = TaskView,
+                        Start = StartView,
+                        Finish = FinishView,
+                        CheckTask = CheckTaskView
+                    }};
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+        private RelayCommand _addTaskinProgress;
+        public RelayCommand AddTaskInProgressCommand
+        {
+            get
+            {
+                return _addTaskinProgress ?? new RelayCommand(async parameter =>
+                {
+                    await AddTaskInProgress();
+                });
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = "")

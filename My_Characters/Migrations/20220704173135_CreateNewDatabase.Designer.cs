@@ -12,8 +12,8 @@ using My_Characters.Context;
 namespace My_Characters.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220629090441_CreateDatabase")]
-    partial class CreateDatabase
+    [Migration("20220704173135_CreateNewDatabase")]
+    partial class CreateNewDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -65,11 +65,23 @@ namespace My_Characters.Migrations
                     b.Property<int>("BiographyId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("CheckTask")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("Finish")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Progress")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("Start")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("StatusProgress")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Task")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

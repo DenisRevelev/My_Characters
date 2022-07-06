@@ -15,14 +15,14 @@ namespace My_Characters.Context
         private string _connetionString;
         public DbSet<BiographyModel> Biographies { get; set; } = null!;
         public DbSet<ProgressModel> Progresses { get; set; } = null!;
+        public DbSet<ToDoListModel> ToDoLists { get; set; } = null!;
         public DbSet<SourceFileModel> SourceFiles { get; set; } = null!;
         public DbSet<ReferenceModel> References { get; set; } = null!;
         public DbSet<RenderModel> Renders { get; set; } = null!;
 
         public ApplicationContext()
         {
-            Database.EnsureCreated();
-            //Database.EnsureDeleted();
+            //Database.EnsureCreated();
         }
 
         private string GetConnectionString()

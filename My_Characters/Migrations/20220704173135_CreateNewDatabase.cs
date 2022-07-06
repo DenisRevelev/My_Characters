@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace My_Characters.Migrations
 {
-    public partial class CreateDatabase : Migration
+    public partial class CreateNewDatabase : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -34,6 +34,10 @@ namespace My_Characters.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Progress = table.Column<int>(type: "int", nullable: false),
                     StatusProgress = table.Column<bool>(type: "bit", nullable: false),
+                    Task = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Start = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Finish = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CheckTask = table.Column<bool>(type: "bit", nullable: false),
                     BiographyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
