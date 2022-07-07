@@ -1,5 +1,0 @@
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=DESKTOP-CS338HB\\SQLEXPRESS01;Integrated Security=True;Connect Timeout=30;Encrypt=False;Database=My_Characters;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
-  }
-}
