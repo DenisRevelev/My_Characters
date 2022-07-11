@@ -15,14 +15,14 @@ namespace My_Characters.ViewModels
 {
     internal class MainWindowViewModel : INotifyPropertyChanged
     {
-       
+
         public MainWindowViewModel()
         {
             GetAllData();
             StartView = DateTime.Now;
             FinishView = DateTime.Now;
         }
-        
+
         #region // Получить всех персонажей для главной страницы:
 
         private ObservableCollection<BiographyModel> _charactersView = new ObservableCollection<BiographyModel>();
@@ -112,8 +112,11 @@ namespace My_Characters.ViewModels
             get => _selectCharacterInView;
             set
             {
-                _selectCharacterInView = value;
-                OnPropertyChanged();
+                if (value != null)
+                {
+                    _selectCharacterInView = value;
+                    OnPropertyChanged();
+                }
             }
         }
         #endregion
@@ -132,7 +135,7 @@ namespace My_Characters.ViewModels
                     Skills = SkillsView
                 };
                 await db.Biographies.AddAsync(createBio);
-                
+
 
                 var createProgress = new ProgressModel()
                 {
@@ -156,11 +159,12 @@ namespace My_Characters.ViewModels
                     await CreateCharacterAsync();
                     using (ApplicationContext db = new ApplicationContext())
                     {
-                        var firstCharacter = await db.Biographies.OrderBy(x => x.Id).LastOrDefaultAsync();
-                        var newCharacter = await db.Biographies.Where(cr => cr.Id == firstCharacter.Id).ToListAsync();
+                        var idLastCharacter = await db.Biographies.OrderBy(x => x.Id).LastOrDefaultAsync();
+                        var newCharacter = await db.Biographies.Where(cr => cr.Id == idLastCharacter.Id).ToListAsync();
                         BiographyCharacterView = new ObservableCollection<BiographyModel>(newCharacter);
                     }
-                    GetAllData(); 
+                    ToDoListView.Clear();
+                    GetAllData();
                 });
             }
         }
@@ -278,7 +282,7 @@ namespace My_Characters.ViewModels
             }
             await GetToDoListInProgress();
         }
-        
+
         private RelayCommand _getBioCharacter { get; set; }
         public RelayCommand GetBioCharacterCommand
         {
@@ -329,8 +333,8 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private DateTime _start;
-        public DateTime StartView
+        private DateTime? _start;
+        public DateTime? StartView
         {
             get => _start;
             set
@@ -339,8 +343,8 @@ namespace My_Characters.ViewModels
                 OnPropertyChanged();
             }
         }
-        private DateTime _finish;
-        public DateTime FinishView
+        private DateTime? _finish;
+        public DateTime? FinishView
         {
             get => _finish;
             set
@@ -349,17 +353,9 @@ namespace My_Characters.ViewModels
                 OnPropertyChanged();
             }
         }
-        private bool _checkTask;
-        public bool CheckTaskView
-        {
-            get => _checkTask;
-            set
-            {
-                _checkTask = value;
-                OnPropertyChanged();
-            }
-        }
         #endregion
+
+        #region // Получить список задач:
         private ObservableCollection<ToDoListModel> _toDoList = new ObservableCollection<ToDoListModel>();
         public ObservableCollection<ToDoListModel> ToDoListView
         {
@@ -370,17 +366,20 @@ namespace My_Characters.ViewModels
                 OnPropertyChanged();
             }
         }
-        #endregion
-       
+
         private async Task GetToDoListInProgress()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
+                int v = 100 / await db.ToDoLists.CountAsync();
                 var toDo = await db.ToDoLists.Where(p => p.ProgressId == SelectCharacterInView.Id).ToListAsync();
                 ToDoListView = new ObservableCollection<ToDoListModel>(toDo);
+                ProgressView = v * toDo.Where(x => x.CheckTask == true).Count();
             }
         }
+        #endregion
 
+        #region // Добавить задачу:
         private async Task AddTaskInProgress()
         {
             using (ApplicationContext db = new ApplicationContext())
@@ -392,8 +391,7 @@ namespace My_Characters.ViewModels
                     {
                         Task = TaskView,
                         Start = StartView,
-                        Finish = FinishView,
-                        CheckTask = CheckTaskView
+                        Finish = FinishView
                     }};
                 }
                 await db.SaveChangesAsync();
@@ -407,9 +405,139 @@ namespace My_Characters.ViewModels
                 return _addTaskinProgress ?? new RelayCommand(async parameter =>
                 {
                     await AddTaskInProgress();
+                    await GetToDoListInProgress();
                 });
             }
         }
+        #endregion
+
+        private ToDoListModel _selectItemInToDo;
+        public ToDoListModel SelectItemInToDoView
+        {
+            get => _selectItemInToDo;
+            set
+            {
+                if (value != null)
+                {
+                    _selectItemInToDo = value;
+                    OnPropertyChanged();
+                    SaveCheckTask();
+                }
+            }
+        }
+
+        private async Task SaveCheckTask()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                int v = 100 / await db.ToDoLists.CountAsync();
+                var checkTask = await db.ToDoLists.Where(toDo => toDo.Id == SelectItemInToDoView.Id).ToListAsync();
+                foreach (var item in checkTask)
+                {
+                    if (item.CheckTask == true)
+                    {
+                        item.CheckTask = false;
+                        ProgressView -= v;
+                    }
+                    else
+                    {
+                        item.CheckTask = true;
+                        ProgressView += v;
+                    }
+                }
+
+                await db.SaveChangesAsync();
+                await GetToDoListInProgress();
+
+                if (await db.ToDoLists.Where(c => c.CheckTask == false).CountAsync() == 0)
+                    ProgressView = 100;
+            }
+        }
+
+        #region// Изменить задачу:
+        private async Task UpdateTaskAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var selectTask = await db.ToDoLists.Where(ch => ch.Id == SelectItemInToDoView.Id).ToListAsync();
+
+                foreach (var item in selectTask)
+                {
+                    TaskView = item.Task;
+                    StartView = item.Start;
+                    FinishView = item.Finish;
+                }
+            }
+        }
+
+        private RelayCommand _updateTask { get; set; }
+        public RelayCommand UpdateTaskCommand
+        {
+            get
+            {
+                return _updateTask ?? new RelayCommand(async parameter =>
+                {
+                    await UpdateTaskAsync();
+                });
+            }
+        }
+
+        private async Task SaveChangesTaskAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var selectTask = await db.ToDoLists.Where(b => b.Id == SelectItemInToDoView.Id).ToListAsync();
+
+                foreach (var item in selectTask)
+                {
+                    item.Task = TaskView;
+                    item.Start = StartView;
+                    item.Finish = FinishView;
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private RelayCommand _saveChangesTask { get; set; }
+        public RelayCommand SaveChangesTaskCommand
+        {
+            get
+            {
+                return _saveChangesTask ?? new RelayCommand(async parameter =>
+                {
+                    await SaveChangesTaskAsync();
+                    await GetToDoListInProgress();
+                });
+            }
+        }
+        #endregion
+
+        #region// Удалить задачу:
+        private async Task DeleteSelectTaskAsync(ToDoListModel selectTask)
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                if (selectTask != null)
+                {
+                    db.ToDoLists.Remove(selectTask);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+        private RelayCommand _deleteSelectTask { get; set; }
+        public RelayCommand DeleteSelectTaskCommand
+        {
+            get
+            {
+                return _deleteSelectTask ?? new RelayCommand(async parameter =>
+                {
+                    await DeleteSelectTaskAsync(SelectItemInToDoView);
+                    await GetToDoListInProgress();
+                });
+            }
+        }
+        #endregion
+        #endregion
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = "")
