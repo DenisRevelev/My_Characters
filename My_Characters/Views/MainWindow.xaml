@@ -196,7 +196,34 @@
                     
                     <!--#region // РЕФЕРЕНСЫ-->
                     <TabItem Header="Реверенсы">
-
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel>
+                                <Button Height="30" Content="Добавить изображение" 
+                                        Command="{Binding OpenFileDialogCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                            </StackPanel>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=ReferencesView}"
+                                          SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectInReferencesView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <StackPanel>
+                                                    <Image Source="{Binding ReferenceImage}"
+                                                           MaxHeight="640"
+                                                           MaxWidth="820"/>
+                                                    <Button Content="Удалить"
+                                                            Height="20" Command="{Binding DeleteSelectReferencCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </ScrollViewer>
+                        </Grid>
                     </TabItem>
                     <!--#endregion-->
                     

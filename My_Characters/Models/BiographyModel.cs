@@ -72,9 +72,9 @@ namespace My_Characters.Models
 
         // Навигационные свойства.
         public ProgressModel? ProgressNavigation { get; set; }
-        public List<ReferenceModel>? ReferenceNavigation { get; set; }
-        public List<RenderModel>? RenderNavigation { get; set; }
-        public List<SourceFileModel>? SourceFileNavigation { get; set; }
+        public ICollection<ReferenceModel>? ReferenceNavigation { get; set; }
+        public ICollection<RenderModel>? RenderNavigation { get; set; }
+        public ICollection<SourceFileModel>? SourceFileNavigation { get; set; }
 
 
 

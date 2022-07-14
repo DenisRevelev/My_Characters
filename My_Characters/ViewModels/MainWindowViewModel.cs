@@ -1,11 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using My_Characters.Commands;
 using My_Characters.Context;
 using My_Characters.Models;
+using My_Characters.ViewModels.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -145,6 +148,13 @@ namespace My_Characters.ViewModels
                 };
                 await db.Progresses.AddAsync(createProgress);
 
+                var createReference = new ReferenceModel()
+                {
+                    ReferenceImage = ImageInByte,
+                    Biography = createBio
+                };
+                await db.References.AddAsync(createReference);
+
                 await db.SaveChangesAsync();
             }
         }
@@ -281,6 +291,7 @@ namespace My_Characters.ViewModels
                 BiographyCharacterView = new ObservableCollection<BiographyModel>(bio);
             }
             await GetToDoListInProgress();
+            await GetReferensec();
         }
 
         private RelayCommand _getBioCharacter { get; set; }
@@ -297,7 +308,7 @@ namespace My_Characters.ViewModels
         #endregion
         #endregion
 
-        #region //  Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
+        #region // Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
         #region // Общие поля:
 
         private int _progress;
@@ -371,10 +382,15 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                int v = 100 / await db.ToDoLists.CountAsync();
-                var toDo = await db.ToDoLists.Where(p => p.ProgressId == SelectCharacterInView.Id).ToListAsync();
+                int v = 0;
+                if (await db.ToDoLists.CountAsync() != 0)
+                    v = 100 / await db.ToDoLists.CountAsync();
+
+                var toDo = await db.ToDoLists.Where(p => p.Progress.BiographyId == SelectCharacterInView.Id).ToListAsync();
                 ToDoListView = new ObservableCollection<ToDoListModel>(toDo);
-                ProgressView = v * toDo.Where(x => x.CheckTask == true).Count();
+
+                if (toDo.Where(x => x.CheckTask == true).Count() != 0)
+                    ProgressView = v * toDo.Where(x => x.CheckTask == true).Count();
             }
         }
         #endregion
@@ -384,7 +400,7 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var prog = await db.Progresses.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                var prog = await db.Progresses.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
                 foreach (var item in prog)
                 {
                     item.ToDoListNavigation = new List<ToDoListModel>() { new ToDoListModel()
@@ -430,7 +446,9 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                int v = 100 / await db.ToDoLists.CountAsync();
+                int v = 0;
+                if (await db.ToDoLists.CountAsync() != 0)
+                    v = 100 / await db.ToDoLists.CountAsync();
                 var checkTask = await db.ToDoLists.Where(toDo => toDo.Id == SelectItemInToDoView.Id).ToListAsync();
                 foreach (var item in checkTask)
                 {
@@ -539,6 +557,121 @@ namespace My_Characters.ViewModels
         #endregion
         #endregion
 
+        #region // Добавить, удалить и изменить данные в разделе "РЕФЕРЕНСЫ":
+        #region // Получить референсы:
+        private ObservableCollection<ReferenceModel> _references = new ObservableCollection<ReferenceModel>();
+        public ObservableCollection<ReferenceModel> ReferencesView
+        {
+            get => _references;
+            set
+            {
+                _references = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async Task GetReferensec()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var getRef = await db.References.Where(x => x.BiographyId == SelectCharacterInView.Id).ToListAsync();
+                ReferencesView = new ObservableCollection<ReferenceModel>(getRef);
+            }
+        }
+        #endregion
+
+        #region // Добавить референсов:
+        private ImageConvertor _imageConvertor = new ImageConvertor();
+        private Bitmap _image;
+
+        private byte[] _imageInByte { get; set; }
+        public byte[] ImageInByte
+        {
+            get => _imageInByte;
+            set
+            {
+                _imageInByte = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async Task OpenFileExplorer()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Game files (*.png)|*.png|All files (*.*)|*.*";
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _image = new Bitmap(openFileDialog.FileName);
+                ImageInByte = _imageConvertor.ConvertImageToByteArray(_image);
+
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    var prog = await db.Biographies.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                    foreach (var item in prog)
+                    {
+                        item.ReferenceNavigation = new List<ReferenceModel>() { new ReferenceModel()
+                        {
+                            ReferenceImage = ImageInByte
+                        }};
+                    }
+                    await db.SaveChangesAsync();
+                }
+                await GetReferensec();
+            }
+        }
+
+        private RelayCommand _openFileDialog { get; set; }
+        public RelayCommand OpenFileDialogCommand
+        {
+            get
+            {
+                return _openFileDialog ?? new RelayCommand(async parameter =>
+                {
+                    await OpenFileExplorer();
+                });
+            }
+        }
+        #endregion
+
+        #region // Удалить референсы:
+        private ReferenceModel _selectInReferencesView;
+        public ReferenceModel SelectInReferencesView
+        {
+            get => _selectInReferencesView;
+            set
+            {
+                _selectInReferencesView = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async Task DeleteReference(ReferenceModel selectItem)
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                if (selectItem != null)
+                {
+                    db.References.Remove(selectItem);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        private RelayCommand _deleteSelectReferenc { get; set; }
+        public RelayCommand DeleteSelectReferencCommand
+        {
+            get
+            {
+                return _deleteSelectReferenc ?? new RelayCommand(async parameter =>
+                {
+                    await DeleteReference(SelectInReferencesView);
+                    await GetReferensec();
+                });
+            }
+        }
+        #endregion
+        #endregion
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {

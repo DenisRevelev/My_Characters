@@ -13,12 +13,12 @@ namespace My_Characters.Context
     internal class ApplicationContext : DbContext
     {
         private string _connetionString;
-        public DbSet<BiographyModel> Biographies { get; set; } = null!;
-        public DbSet<ProgressModel> Progresses { get; set; } = null!;
-        public DbSet<ToDoListModel> ToDoLists { get; set; } = null!;
-        public DbSet<SourceFileModel> SourceFiles { get; set; } = null!;
-        public DbSet<ReferenceModel> References { get; set; } = null!;
-        public DbSet<RenderModel> Renders { get; set; } = null!;
+        public DbSet<BiographyModel> Biographies => Set<BiographyModel>();
+        public DbSet<ProgressModel> Progresses => Set<ProgressModel>();
+        public DbSet<ToDoListModel> ToDoLists => Set<ToDoListModel>();
+        public DbSet<SourceFileModel> SourceFiles => Set<SourceFileModel>();
+        public DbSet<ReferenceModel> References => Set<ReferenceModel>();
+        public DbSet<RenderModel> Renders => Set<RenderModel>();
 
         public ApplicationContext()
         {
