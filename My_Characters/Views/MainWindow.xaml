@@ -229,13 +229,74 @@
                     
                     <!--#region // ФАЙЛЫ:-->
                     <TabItem Header="Файлы">
-
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel>
+                                <Button Height="30" Content="Добавить файл" 
+                                        Command="{Binding AddSourceFileCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                            </StackPanel>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=SourceFilesView}"
+                                          SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectItemInSourceFile}"
+                                          HorizontalContentAlignment="Stretch">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Path}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <Button Content="Удалить"
+                                                            Height="25" 
+                                                            Command="{Binding DeleteItemInSourceFileCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                                    <Button Content="Запустить"
+                                                            Height="25" Command="{Binding StartProcessCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </ScrollViewer>
+                        </Grid>
                     </TabItem>
                     <!--#endregion-->
                     
                     <!--#region // РЕНДЕР:-->
                     <TabItem Header="Рендер">
-
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="50"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel>
+                                <Button Content="Добавить Рендер"
+                                        Height="30" 
+                                        Command="{Binding AddRenderCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                            </StackPanel>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1">
+                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=GetRenderView}"
+                                          SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectItemInRender}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <Image Source="{Binding RenderImage}" 
+                                                       MaxHeight="1024"
+                                                       MaxWidth="920"/>
+                                                <Button Height="15" 
+                                                        Command="{Binding DeleteInRenderCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </ScrollViewer>
+                        </Grid>
                     </TabItem>
                     <!--#endregion-->
                 </TabControl>

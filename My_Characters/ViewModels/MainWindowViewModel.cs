@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -139,21 +140,12 @@ namespace My_Characters.ViewModels
                 };
                 await db.Biographies.AddAsync(createBio);
 
-
-                var createProgress = new ProgressModel()
+                var createProg = new ProgressModel()
                 {
                     Progress = ProgressView,
-                    StatusProgress = StatusProgeressView,
                     Biography = createBio
                 };
-                await db.Progresses.AddAsync(createProgress);
-
-                var createReference = new ReferenceModel()
-                {
-                    ReferenceImage = ImageInByte,
-                    Biography = createBio
-                };
-                await db.References.AddAsync(createReference);
+                await db.AddAsync(createProg);
 
                 await db.SaveChangesAsync();
             }
@@ -172,8 +164,11 @@ namespace My_Characters.ViewModels
                         var idLastCharacter = await db.Biographies.OrderBy(x => x.Id).LastOrDefaultAsync();
                         var newCharacter = await db.Biographies.Where(cr => cr.Id == idLastCharacter.Id).ToListAsync();
                         BiographyCharacterView = new ObservableCollection<BiographyModel>(newCharacter);
+                        SelectCharacterInView = idLastCharacter;
                     }
                     ToDoListView.Clear();
+                    ReferencesView.Clear();
+                    SourceFilesView.Clear();
                     GetAllData();
                 });
             }
@@ -290,8 +285,10 @@ namespace My_Characters.ViewModels
                 var bio = await db.Biographies.Where(b => b.Id == SelectCharacterInView.Id).ToListAsync();
                 BiographyCharacterView = new ObservableCollection<BiographyModel>(bio);
             }
-            await GetToDoListInProgress();
-            await GetReferensec();
+            await GetToDoListInProgressAsync();
+            await GetReferensecAsync();
+            await GetSourceFilesAsync();
+            await GetRenderAsync();
         }
 
         private RelayCommand _getBioCharacter { get; set; }
@@ -378,7 +375,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private async Task GetToDoListInProgress()
+        private async Task GetToDoListInProgressAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -403,6 +400,7 @@ namespace My_Characters.ViewModels
                 var prog = await db.Progresses.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
                 foreach (var item in prog)
                 {
+                    
                     item.ToDoListNavigation = new List<ToDoListModel>() { new ToDoListModel()
                     {
                         Task = TaskView,
@@ -421,7 +419,7 @@ namespace My_Characters.ViewModels
                 return _addTaskinProgress ?? new RelayCommand(async parameter =>
                 {
                     await AddTaskInProgress();
-                    await GetToDoListInProgress();
+                    await GetToDoListInProgressAsync();
                 });
             }
         }
@@ -465,7 +463,7 @@ namespace My_Characters.ViewModels
                 }
 
                 await db.SaveChangesAsync();
-                await GetToDoListInProgress();
+                await GetToDoListInProgressAsync();
 
                 if (await db.ToDoLists.Where(c => c.CheckTask == false).CountAsync() == 0)
                     ProgressView = 100;
@@ -524,7 +522,7 @@ namespace My_Characters.ViewModels
                 return _saveChangesTask ?? new RelayCommand(async parameter =>
                 {
                     await SaveChangesTaskAsync();
-                    await GetToDoListInProgress();
+                    await GetToDoListInProgressAsync();
                 });
             }
         }
@@ -550,14 +548,14 @@ namespace My_Characters.ViewModels
                 return _deleteSelectTask ?? new RelayCommand(async parameter =>
                 {
                     await DeleteSelectTaskAsync(SelectItemInToDoView);
-                    await GetToDoListInProgress();
+                    await GetToDoListInProgressAsync();
                 });
             }
         }
         #endregion
         #endregion
 
-        #region // Добавить, удалить и изменить данные в разделе "РЕФЕРЕНСЫ":
+        #region // Добавить, удалить данные в разделе "РЕФЕРЕНСЫ":
         #region // Получить референсы:
         private ObservableCollection<ReferenceModel> _references = new ObservableCollection<ReferenceModel>();
         public ObservableCollection<ReferenceModel> ReferencesView
@@ -570,7 +568,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private async Task GetReferensec()
+        private async Task GetReferensecAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -584,13 +582,13 @@ namespace My_Characters.ViewModels
         private ImageConvertor _imageConvertor = new ImageConvertor();
         private Bitmap _image;
 
-        private byte[] _imageInByte { get; set; }
-        public byte[] ImageInByte
+        private byte[] _ReferenceInByte { get; set; }
+        public byte[] ReferenceInByte
         {
-            get => _imageInByte;
+            get => _ReferenceInByte;
             set
             {
-                _imageInByte = value;
+                _ReferenceInByte = value;
                 OnPropertyChanged();
             }
         }
@@ -598,12 +596,12 @@ namespace My_Characters.ViewModels
         private async Task OpenFileExplorer()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Game files (*.png)|*.png|All files (*.*)|*.*";
+            openFileDialog.Filter = "Files (*.png)|*.png|All files (*.*)|*.*";
             openFileDialog.Multiselect = false;
             if (openFileDialog.ShowDialog() == true)
             {
                 _image = new Bitmap(openFileDialog.FileName);
-                ImageInByte = _imageConvertor.ConvertImageToByteArray(_image);
+                ReferenceInByte = _imageConvertor.ConvertImageToByteArray(_image);
 
                 using (ApplicationContext db = new ApplicationContext())
                 {
@@ -612,12 +610,11 @@ namespace My_Characters.ViewModels
                     {
                         item.ReferenceNavigation = new List<ReferenceModel>() { new ReferenceModel()
                         {
-                            ReferenceImage = ImageInByte
+                            ReferenceImage = ReferenceInByte
                         }};
                     }
                     await db.SaveChangesAsync();
                 }
-                await GetReferensec();
             }
         }
 
@@ -629,6 +626,7 @@ namespace My_Characters.ViewModels
                 return _openFileDialog ?? new RelayCommand(async parameter =>
                 {
                     await OpenFileExplorer();
+                    await GetReferensecAsync();
                 });
             }
         }
@@ -666,12 +664,269 @@ namespace My_Characters.ViewModels
                 return _deleteSelectReferenc ?? new RelayCommand(async parameter =>
                 {
                     await DeleteReference(SelectInReferencesView);
-                    await GetReferensec();
+                    await GetReferensecAsync();
                 });
             }
         }
         #endregion
         #endregion
+
+        #region // Добавить, удалить и изменить данные в разделе "ФАЙЛЫ":
+        private string _pathFile;
+        public string PathFileView
+        {
+            get => _pathFile;
+            set
+            {
+                _pathFile = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private SourceFileModel _selectItemInSourceFile;
+
+        public SourceFileModel SelectItemInSourceFile
+        {
+            get => _selectItemInSourceFile;
+            set
+            {
+                if (value != null)
+                {
+                    _selectItemInSourceFile = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #region // Получить файлы:
+        private ObservableCollection<SourceFileModel> _sourceFiles = new ObservableCollection<SourceFileModel>();
+
+        public ObservableCollection<SourceFileModel> SourceFilesView
+        {
+            get => _sourceFiles;
+            set
+            {
+                _sourceFiles = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+        private async Task GetSourceFilesAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var getSurseFiles = await db.SourceFiles.Where(id => id.BiographyId == SelectCharacterInView.Id).ToListAsync();
+                SourceFilesView = new ObservableCollection<SourceFileModel>(getSurseFiles);
+            }
+        }
+
+        #region // Добавить файл:
+        private async Task OpenFileDialog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Files (*.exe)|*.exe|All files (*.*)|*.*";
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+
+                PathFileView = openFileDialog.FileName;
+
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    var getNavigationProperty = await db.Biographies.Where(b => b.Id == SelectCharacterInView.Id).ToListAsync();
+                    foreach (var item in getNavigationProperty)
+                    {
+                        item.SourceFileNavigation = new List<SourceFileModel>() { new SourceFileModel()
+                        {
+                            Path = PathFileView
+                        }};
+                    }
+                    await db.SaveChangesAsync();
+                }
+                await GetSourceFilesAsync();
+            }
+        }
+
+        private RelayCommand _addSourceFaile { get; set; }
+        public RelayCommand AddSourceFileCommand
+        {
+            get
+            {
+                return _addSourceFaile ?? new RelayCommand(async parameter =>
+                {
+                    await OpenFileDialog();
+                });
+            }
+        }
+        #endregion
+
+        #region // Изменить файл:
+        #endregion
+
+        #region // Удалить файл:
+        private async Task DeleteItemInSourceFile(SourceFileModel sourceFile)
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                if (sourceFile != null)
+                {
+                    db.SourceFiles.Remove(sourceFile);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        private RelayCommand _deleteItemInSourceFiles { get; set; } 
+        public RelayCommand DeleteItemInSourceFileCommand
+        {
+            get
+            {
+                return _deleteItemInSourceFiles ?? new RelayCommand(async parameter =>
+                {
+                    await DeleteItemInSourceFile(SelectItemInSourceFile);
+                    await GetSourceFilesAsync();
+                });
+            }
+        }
+        #endregion
+
+        #region // Запустить файл:
+        private async Task StartProcess()
+        {
+            Process.Start(SelectItemInSourceFile.Path!);
+        }
+
+        private RelayCommand _startProcess { get; set; }
+        
+        public RelayCommand StartProcessCommand
+        {
+            get
+            {
+                return _startProcess ?? new RelayCommand(async parameter =>
+                {
+                    await StartProcess();
+                });
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region // Добавить, удалить и изменить данные в разделе "Рендер":
+        private byte[] _renderInByte { get; set; }
+        public byte[] RenderInByte
+        {
+            get => _renderInByte;
+            set
+            {
+                _renderInByte = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #region // Получить рендеры:
+        private ObservableCollection<RenderModel> _getRender = new ObservableCollection<RenderModel>();
+        public ObservableCollection<RenderModel> GetRenderView
+        {
+            get => _getRender;
+            set
+            {
+                _getRender = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async Task GetRenderAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var getRender = await db.Renders.Where(x => x.BiographyId == SelectCharacterInView.Id).ToListAsync();
+                GetRenderView = new ObservableCollection<RenderModel>(getRender);
+            }
+        }
+        #endregion
+
+        #region // Добавить рендер:
+        private async Task OpenFileExplorerForRenderAsync()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Files (*.png)|*.png|All files (*.*)|*.*";
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _image = new Bitmap(openFileDialog.FileName);
+                RenderInByte = _imageConvertor.ConvertImageToByteArray(_image);
+
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    var prog = await db.Biographies.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                    foreach (var item in prog)
+                    {
+                        item.RenderNavigation = new List<RenderModel>() { new RenderModel()
+                        {
+                            RenderImage = RenderInByte
+                        }};
+                    }
+                    await db.SaveChangesAsync();
+                }
+                await GetReferensecAsync();
+            }
+        }
+
+        private RelayCommand _addRender { get; set; }
+        public RelayCommand AddRenderCommand
+        {
+            get
+            {
+                return _addRender ?? new RelayCommand(async parameneter =>
+                {
+                    await OpenFileExplorerForRenderAsync();
+                    await GetRenderAsync();
+                });
+            }
+        }
+        #endregion
+
+        #region // Удалить рендер:
+        private RenderModel _selectItemInRender;
+        public RenderModel SelectItemInRender
+        {
+            get => _selectItemInRender;
+            set
+            {
+                if (value != null)
+                {
+                    _selectItemInRender = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private async Task DeleteItemInRenderAsync(RenderModel item)
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                if (item != null)
+                    db.Renders.Remove(item);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private RelayCommand _deleteInRender { get; set; }
+        public RelayCommand DeleteInRenderCommand
+        {
+            get
+            {
+                return _deleteInRender ?? new RelayCommand(async parameter =>
+                {
+                    await DeleteItemInRenderAsync(SelectItemInRender);
+                    await GetRenderAsync();
+                });
+            }
+        }
+        #endregion
+        #endregion
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {

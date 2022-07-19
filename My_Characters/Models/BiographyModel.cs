@@ -16,7 +16,7 @@ namespace My_Characters.Models
 
         
         private string? _name;
-        [MaxLength(16)]
+        [MaxLength(52)]
         public string? Name 
         { 
             get => _name;
@@ -28,7 +28,7 @@ namespace My_Characters.Models
         }
 
         private string? _lastName;
-        [MaxLength(16)]
+        [MaxLength(52)]
         public string? LastName 
         { 
             get => _lastName; 
