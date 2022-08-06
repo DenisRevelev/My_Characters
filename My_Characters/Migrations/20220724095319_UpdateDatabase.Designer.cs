@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using My_Characters.Context;
 
@@ -11,9 +12,10 @@ using My_Characters.Context;
 namespace My_Characters.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220724095319_UpdateDatabase")]
+    partial class UpdateDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,6 +55,31 @@ namespace My_Characters.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Biographies");
+                });
+
+            modelBuilder.Entity("My_Characters.Models.ProgressModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("BiographyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("StatusProgress")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BiographyId")
+                        .IsUnique();
+
+                    b.ToTable("Progresses");
                 });
 
             modelBuilder.Entity("My_Characters.Models.ReferenceModel", b =>
@@ -126,14 +153,14 @@ namespace My_Characters.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("BiographyId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("CheckTask")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("Finish")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("ProgressId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("Start")
                         .HasColumnType("datetime2");
@@ -143,9 +170,20 @@ namespace My_Characters.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BiographyId");
+                    b.HasIndex("ProgressId");
 
                     b.ToTable("ToDoLists");
+                });
+
+            modelBuilder.Entity("My_Characters.Models.ProgressModel", b =>
+                {
+                    b.HasOne("My_Characters.Models.BiographyModel", "Biography")
+                        .WithOne("ProgressNavigation")
+                        .HasForeignKey("My_Characters.Models.ProgressModel", "BiographyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Biography");
                 });
 
             modelBuilder.Entity("My_Characters.Models.ReferenceModel", b =>
@@ -183,13 +221,13 @@ namespace My_Characters.Migrations
 
             modelBuilder.Entity("My_Characters.Models.ToDoListModel", b =>
                 {
-                    b.HasOne("My_Characters.Models.BiographyModel", "Biography")
-                        .WithMany("ProgressNavigation")
-                        .HasForeignKey("BiographyId")
+                    b.HasOne("My_Characters.Models.ProgressModel", "Progress")
+                        .WithMany("ToDoListNavigation")
+                        .HasForeignKey("ProgressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Biography");
+                    b.Navigation("Progress");
                 });
 
             modelBuilder.Entity("My_Characters.Models.BiographyModel", b =>
@@ -201,6 +239,11 @@ namespace My_Characters.Migrations
                     b.Navigation("RenderNavigation");
 
                     b.Navigation("SourceFileNavigation");
+                });
+
+            modelBuilder.Entity("My_Characters.Models.ProgressModel", b =>
+                {
+                    b.Navigation("ToDoListNavigation");
                 });
 #pragma warning restore 612, 618
         }

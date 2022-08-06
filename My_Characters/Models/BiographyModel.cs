@@ -10,78 +10,22 @@ using System.Threading.Tasks;
 namespace My_Characters.Models
 {
     // Главная сущность.
-    public class BiographyModel : INotifyPropertyChanged
+    public class BiographyModel
     {
         public int Id { get; set; }
-
-        
-        private string? _name;
+        public byte[]? AvatarImage { get; set; }
         [MaxLength(52)]
-        public string? Name 
-        { 
-            get => _name;
-            set
-            {
-                _name = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string? _lastName;
+        public string? Name { get; set; }
         [MaxLength(52)]
-        public string? LastName 
-        { 
-            get => _lastName; 
-            set
-            {
-                _lastName = value;
-                OnPropertyChanged();
-            }
-        }
-        private int _age;
-        public int Age 
-        { 
-            get => _age;
-            set
-            {
-                _age = value;
-                OnPropertyChanged();
-            }
-        }
-        private string? _biography;
-        public string? Biography 
-        { 
-            get => _biography;
-            set
-            {
-                _biography = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string? _skills;
-        public string? Skills 
-        {
-            get => _skills;
-            set
-            {
-                _skills = value;
-                OnPropertyChanged();
-            }
-        }
+        public string? LastName { get; set;}
+        public int Age { get; set; }
+        public string? Biography {get; set; }
+        public string? Skills {get; set; }
 
         // Навигационные свойства.
-        public ProgressModel? ProgressNavigation { get; set; }
+        public ICollection<ToDoListModel>? ProgressNavigation { get; set; }
         public ICollection<ReferenceModel>? ReferenceNavigation { get; set; }
         public ICollection<RenderModel>? RenderNavigation { get; set; }
         public ICollection<SourceFileModel>? SourceFileNavigation { get; set; }
-
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

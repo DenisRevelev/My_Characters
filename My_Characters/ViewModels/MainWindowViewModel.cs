@@ -20,6 +20,8 @@ namespace My_Characters.ViewModels
     internal class MainWindowViewModel : INotifyPropertyChanged
     {
 
+        private ImageConvertor _imageConvertor = new ImageConvertor();
+        private Bitmap? _image;
         public MainWindowViewModel()
         {
             GetAllData();
@@ -44,8 +46,8 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext context = new ApplicationContext())
             {
-                IEnumerable<BiographyModel> biographyIEnum = context.Biographies.ToList();
-                CharactersView = new ObservableCollection<BiographyModel>(biographyIEnum);
+                var getCharacters = context.Biographies.ToList();
+                CharactersView = new ObservableCollection<BiographyModel>(getCharacters);
             }
         }
         #endregion
@@ -55,8 +57,8 @@ namespace My_Characters.ViewModels
         #region // ДОБАВИТЬ БИОГРАФИЮ ПЕРСОНАЖА = СОЗДАТЬ ПЕРСОНАЖА:
 
         #region // Общие поля:
-        private string _name;
-        public string NameView
+        private string? _name;
+        public string? NameView
         {
             get => _name;
             set
@@ -66,8 +68,8 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private string _lastName;
-        public string LastNameView
+        private string? _lastName;
+        public string? LastNameView
         {
             get => _lastName;
             set
@@ -88,8 +90,8 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private string _biography;
-        public string BiographyView
+        private string? _biography;
+        public string? BiographyView
         {
             get => _biography;
             set
@@ -99,13 +101,24 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private string _skills;
-        public string SkillsView
+        private string? _skills;
+        public string? SkillsView
         {
             get => _skills;
             set
             {
                 _skills = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private byte[]? _avatarInByte;
+        public byte[]? AvararView
+        {
+            get => _avatarInByte;
+            set
+            {
+                _avatarInByte = value;
                 OnPropertyChanged();
             }
         }
@@ -130,28 +143,26 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext db = new ApplicationContext())
             {
+                _image = new Bitmap(@"C:\Users\Denis\source\repos\My_Characters\My_Characters\Image\ava.png");
+                AvararView = _imageConvertor.ConvertImageToByteArray(_image);
+
                 var createBio = new BiographyModel()
                 {
                     Name = NameView,
                     LastName = LastNameView,
                     Age = AgeView,
                     Biography = BiographyView,
-                    Skills = SkillsView
+                    Skills = SkillsView,
+                    AvatarImage = AvararView
                 };
-                await db.Biographies.AddAsync(createBio);
 
-                var createProg = new ProgressModel()
-                {
-                    Progress = ProgressView,
-                    Biography = createBio
-                };
-                await db.AddAsync(createProg);
+                await db.Biographies.AddAsync(createBio);
 
                 await db.SaveChangesAsync();
             }
         }
 
-        private RelayCommand _createCharacter { get; set; }
+        private RelayCommand? _createCharacter { get; set; }
         public RelayCommand CreateCharacterCommand
         {
             get
@@ -162,13 +173,14 @@ namespace My_Characters.ViewModels
                     using (ApplicationContext db = new ApplicationContext())
                     {
                         var idLastCharacter = await db.Biographies.OrderBy(x => x.Id).LastOrDefaultAsync();
-                        var newCharacter = await db.Biographies.Where(cr => cr.Id == idLastCharacter.Id).ToListAsync();
+                        var newCharacter = await db.Biographies.Where(cr => cr.Id == idLastCharacter!.Id).ToListAsync();
                         BiographyCharacterView = new ObservableCollection<BiographyModel>(newCharacter);
-                        SelectCharacterInView = idLastCharacter;
+                        SelectCharacterInView = idLastCharacter!;
                     }
                     ToDoListView.Clear();
                     ReferencesView.Clear();
                     SourceFilesView.Clear();
+                    RenderView.Clear();
                     GetAllData();
                 });
             }
@@ -192,7 +204,7 @@ namespace My_Characters.ViewModels
                 }
             }
         }
-        private RelayCommand _updateCharacter { get; set; }
+        private RelayCommand? _updateCharacter { get; set; }
         public RelayCommand UpdateCharacterCommand
         {
             get
@@ -222,7 +234,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _saveChangesCharacter { get; set; }
+        private RelayCommand? _saveChangesCharacter { get; set; }
         public RelayCommand SaveChangesCharacterCommand
         {
             get
@@ -230,6 +242,44 @@ namespace My_Characters.ViewModels
                 return _saveChangesCharacter ?? new RelayCommand(async parameter =>
                 {
                     await SaveChangesCharacterAsync();
+                    await GetBiographyCharacterAsync();
+                    GetAllData();
+                });
+            }
+        }
+        #endregion
+
+        #region // Добавить, обновить аватар персонажа:
+        private async Task AddAvatarAsync()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Files (*.png)|*.png|All files (*.*)|*.*";
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _image = new Bitmap(openFileDialog.FileName);
+                AvararView = _imageConvertor.ConvertImageToByteArray(_image);
+
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    var prog = await db.Biographies.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                    foreach (var item in prog)
+                    {
+                        item.AvatarImage = AvararView;
+                    }
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        private RelayCommand? _addAvatar { get; set; }
+        public RelayCommand AddAvatarCommand
+        {
+            get
+            {
+                return _addAvatar ?? new RelayCommand(async parameter =>
+                {
+                    await AddAvatarAsync();
                     await GetBiographyCharacterAsync();
                     GetAllData();
                 });
@@ -250,7 +300,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _deleteCharacter { get; set; }
+        private RelayCommand? _deleteCharacter { get; set; }
         public RelayCommand DeleteCharacterCommand
         {
             get
@@ -285,13 +335,14 @@ namespace My_Characters.ViewModels
                 var bio = await db.Biographies.Where(b => b.Id == SelectCharacterInView.Id).ToListAsync();
                 BiographyCharacterView = new ObservableCollection<BiographyModel>(bio);
             }
-            await GetToDoListInProgressAsync();
+            await GetProgressAsync();
+            await GetToDoListAsync();
             await GetReferensecAsync();
             await GetSourceFilesAsync();
             await GetRenderAsync();
         }
 
-        private RelayCommand _getBioCharacter { get; set; }
+        private RelayCommand? _getBioCharacter { get; set; }
         public RelayCommand GetBioCharacterCommand
         {
             get
@@ -306,32 +357,11 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
+
         #region // Общие поля:
 
-        private int _progress;
-        public int ProgressView
-        {
-            get => _progress;
-            set
-            {
-                _progress = value;
-                OnPropertyChanged();
-            }
-        }
-        private bool _statusProgeress;
-
-        public bool StatusProgeressView
-        {
-            get => _statusProgeress;
-            set
-            {
-                _statusProgeress = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string _task;
-        public string TaskView
+        private string? _task;
+        public string? TaskView
         {
             get => _task;
             set
@@ -375,33 +405,26 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private async Task GetToDoListInProgressAsync()
+        private async Task GetToDoListAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                int v = 0;
-                if (await db.ToDoLists.CountAsync() != 0)
-                    v = 100 / await db.ToDoLists.CountAsync();
-
-                var toDo = await db.ToDoLists.Where(p => p.Progress.BiographyId == SelectCharacterInView.Id).ToListAsync();
-                ToDoListView = new ObservableCollection<ToDoListModel>(toDo);
-
-                if (toDo.Where(x => x.CheckTask == true).Count() != 0)
-                    ProgressView = v * toDo.Where(x => x.CheckTask == true).Count();
+                var toDoList = await db.ToDoLists.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
+                ToDoListView = new ObservableCollection<ToDoListModel>(toDoList);
             }
         }
         #endregion
 
         #region // Добавить задачу:
-        private async Task AddTaskInProgress()
+        private async Task AddTaskInAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var prog = await db.Progresses.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
-                foreach (var item in prog)
+                var newTask = await db.Biographies.Where(p => p.Id == SelectCharacterInView.Id).ToListAsync();
+                foreach (var item in newTask)
                 {
                     
-                    item.ToDoListNavigation = new List<ToDoListModel>() { new ToDoListModel()
+                    item.ProgressNavigation = new List<ToDoListModel>() { new ToDoListModel()
                     {
                         Task = TaskView,
                         Start = StartView,
@@ -411,62 +434,55 @@ namespace My_Characters.ViewModels
                 await db.SaveChangesAsync();
             }
         }
-        private RelayCommand _addTaskinProgress;
-        public RelayCommand AddTaskInProgressCommand
+        private RelayCommand? _addTaskinList { get; set; }
+        public RelayCommand AddTaskInListCommand
         {
             get
             {
-                return _addTaskinProgress ?? new RelayCommand(async parameter =>
+                return _addTaskinList ?? new RelayCommand(async parameter =>
                 {
-                    await AddTaskInProgress();
-                    await GetToDoListInProgressAsync();
+                    await AddTaskInAsync();
+                    await GetToDoListAsync();
                 });
             }
         }
         #endregion
 
-        private ToDoListModel _selectItemInToDo;
+        private ToDoListModel _selectItemInToDoList;
         public ToDoListModel SelectItemInToDoView
         {
-            get => _selectItemInToDo;
+            get => _selectItemInToDoList;
             set
             {
                 if (value != null)
                 {
-                    _selectItemInToDo = value;
+                    _selectItemInToDoList = value;
                     OnPropertyChanged();
-                    SaveCheckTask();
+                    SaveCheckTaskAsync();
                 }
             }
         }
 
-        private async Task SaveCheckTask()
+        private async Task SaveCheckTaskAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                int v = 0;
-                if (await db.ToDoLists.CountAsync() != 0)
-                    v = 100 / await db.ToDoLists.CountAsync();
                 var checkTask = await db.ToDoLists.Where(toDo => toDo.Id == SelectItemInToDoView.Id).ToListAsync();
                 foreach (var item in checkTask)
                 {
                     if (item.CheckTask == true)
                     {
                         item.CheckTask = false;
-                        ProgressView -= v;
                     }
                     else
                     {
                         item.CheckTask = true;
-                        ProgressView += v;
                     }
                 }
 
                 await db.SaveChangesAsync();
-                await GetToDoListInProgressAsync();
-
-                if (await db.ToDoLists.Where(c => c.CheckTask == false).CountAsync() == 0)
-                    ProgressView = 100;
+                await GetToDoListAsync();
+                await GetProgressAsync();
             }
         }
 
@@ -479,14 +495,14 @@ namespace My_Characters.ViewModels
 
                 foreach (var item in selectTask)
                 {
-                    TaskView = item.Task;
+                    TaskView = item.Task!;
                     StartView = item.Start;
                     FinishView = item.Finish;
                 }
             }
         }
 
-        private RelayCommand _updateTask { get; set; }
+        private RelayCommand? _updateTask { get; set; }
         public RelayCommand UpdateTaskCommand
         {
             get
@@ -514,7 +530,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _saveChangesTask { get; set; }
+        private RelayCommand? _saveChangesTask { get; set; }
         public RelayCommand SaveChangesTaskCommand
         {
             get
@@ -522,7 +538,7 @@ namespace My_Characters.ViewModels
                 return _saveChangesTask ?? new RelayCommand(async parameter =>
                 {
                     await SaveChangesTaskAsync();
-                    await GetToDoListInProgressAsync();
+                    await GetToDoListAsync();
                 });
             }
         }
@@ -540,7 +556,7 @@ namespace My_Characters.ViewModels
                 }
             }
         }
-        private RelayCommand _deleteSelectTask { get; set; }
+        private RelayCommand? _deleteSelectTask { get; set; }
         public RelayCommand DeleteSelectTaskCommand
         {
             get
@@ -548,11 +564,24 @@ namespace My_Characters.ViewModels
                 return _deleteSelectTask ?? new RelayCommand(async parameter =>
                 {
                     await DeleteSelectTaskAsync(SelectItemInToDoView);
-                    await GetToDoListInProgressAsync();
+                    await GetToDoListAsync();
                 });
             }
         }
         #endregion
+
+        #region 
+        private async Task GetProgressAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var getProgressesForCharacter = await db.ToDoLists.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
+                
+                await db.SaveChangesAsync();
+            }
+        }
+        #endregion
+
         #endregion
 
         #region // Добавить, удалить данные в разделе "РЕФЕРЕНСЫ":
@@ -579,16 +608,14 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить референсов:
-        private ImageConvertor _imageConvertor = new ImageConvertor();
-        private Bitmap _image;
 
-        private byte[] _ReferenceInByte { get; set; }
-        public byte[] ReferenceInByte
+        private byte[]? _referenceInByte { get; set; }
+        public byte[]? ReferenceInByte
         {
-            get => _ReferenceInByte;
+            get => _referenceInByte;
             set
             {
-                _ReferenceInByte = value;
+                _referenceInByte = value;
                 OnPropertyChanged();
             }
         }
@@ -618,7 +645,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _openFileDialog { get; set; }
+        private RelayCommand? _openFileDialog { get; set; }
         public RelayCommand OpenFileDialogCommand
         {
             get
@@ -656,7 +683,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _deleteSelectReferenc { get; set; }
+        private RelayCommand? _deleteSelectReferenc { get; set; }
         public RelayCommand DeleteSelectReferencCommand
         {
             get
@@ -672,8 +699,8 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить, удалить и изменить данные в разделе "ФАЙЛЫ":
-        private string _pathFile;
-        public string PathFileView
+        private string? _pathFile;
+        public string? PathFileView
         {
             get => _pathFile;
             set
@@ -747,7 +774,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _addSourceFaile { get; set; }
+        private RelayCommand? _addSourceFaile { get; set; }
         public RelayCommand AddSourceFileCommand
         {
             get
@@ -776,12 +803,12 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _deleteItemInSourceFiles { get; set; } 
+        private RelayCommand? _deleteSelectItemInSourceFiles { get; set; } 
         public RelayCommand DeleteItemInSourceFileCommand
         {
             get
             {
-                return _deleteItemInSourceFiles ?? new RelayCommand(async parameter =>
+                return _deleteSelectItemInSourceFiles ?? new RelayCommand(async parameter =>
                 {
                     await DeleteItemInSourceFile(SelectItemInSourceFile);
                     await GetSourceFilesAsync();
@@ -791,12 +818,12 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Запустить файл:
-        private async Task StartProcess()
+        private async Task StartProcessAsync()
         {
-            Process.Start(SelectItemInSourceFile.Path!);
+            await Task.Run(() => Process.Start(SelectItemInSourceFile.Path!));
         }
 
-        private RelayCommand _startProcess { get; set; }
+        private RelayCommand? _startProcess { get; set; }
         
         public RelayCommand StartProcessCommand
         {
@@ -804,7 +831,7 @@ namespace My_Characters.ViewModels
             {
                 return _startProcess ?? new RelayCommand(async parameter =>
                 {
-                    await StartProcess();
+                    await StartProcessAsync();
                 });
             }
         }
@@ -813,8 +840,8 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить, удалить и изменить данные в разделе "Рендер":
-        private byte[] _renderInByte { get; set; }
-        public byte[] RenderInByte
+        private byte[]? _renderInByte { get; set; }
+        public byte[]? RenderInByte
         {
             get => _renderInByte;
             set
@@ -826,7 +853,7 @@ namespace My_Characters.ViewModels
 
         #region // Получить рендеры:
         private ObservableCollection<RenderModel> _getRender = new ObservableCollection<RenderModel>();
-        public ObservableCollection<RenderModel> GetRenderView
+        public ObservableCollection<RenderModel> RenderView
         {
             get => _getRender;
             set
@@ -841,7 +868,7 @@ namespace My_Characters.ViewModels
             using (ApplicationContext db = new ApplicationContext())
             {
                 var getRender = await db.Renders.Where(x => x.BiographyId == SelectCharacterInView.Id).ToListAsync();
-                GetRenderView = new ObservableCollection<RenderModel>(getRender);
+                RenderView = new ObservableCollection<RenderModel>(getRender);
             }
         }
         #endregion
@@ -873,7 +900,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _addRender { get; set; }
+        private RelayCommand? _addRender { get; set; }
         public RelayCommand AddRenderCommand
         {
             get
@@ -885,6 +912,9 @@ namespace My_Characters.ViewModels
                 });
             }
         }
+        #endregion
+
+        #region // Изменить рендер
         #endregion
 
         #region // Удалить рендер:
@@ -912,7 +942,7 @@ namespace My_Characters.ViewModels
             }
         }
 
-        private RelayCommand _deleteInRender { get; set; }
+        private RelayCommand? _deleteInRender { get; set; }
         public RelayCommand DeleteInRenderCommand
         {
             get

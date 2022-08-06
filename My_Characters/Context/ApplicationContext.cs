@@ -12,18 +12,12 @@ namespace My_Characters.Context
 {
     internal class ApplicationContext : DbContext
     {
-        private string _connetionString;
+        private string? _connetionString;
         public DbSet<BiographyModel> Biographies => Set<BiographyModel>();
-        public DbSet<ProgressModel> Progresses => Set<ProgressModel>();
         public DbSet<ToDoListModel> ToDoLists => Set<ToDoListModel>();
         public DbSet<SourceFileModel> SourceFiles => Set<SourceFileModel>();
         public DbSet<ReferenceModel> References => Set<ReferenceModel>();
         public DbSet<RenderModel> Renders => Set<RenderModel>();
-
-        public ApplicationContext()
-        {
-            //Database.EnsureCreated();
-        }
 
         private string GetConnectionString()
         {

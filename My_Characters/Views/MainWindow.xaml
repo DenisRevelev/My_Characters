@@ -10,7 +10,7 @@
     <Window.Resources>
         <local:MainWindowViewModel x:Key="myVM"/>
     </Window.Resources>
-    <Grid>
+    <Grid x:Name="grid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
             <ColumnDefinition Width="*"/>
@@ -19,12 +19,12 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <Button Grid.Column="1"
                 Height="20"  
                 Width="90"
                 Click="OpenInfoCharacter_Click" />
-        
+
         <StackPanel Grid.RowSpan="2">
             <Button Height="30"/>
         </StackPanel>
@@ -58,6 +58,9 @@
                                         Command="{Binding DeleteCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1">
+                                <Label>Аватар</Label>
+                                <Button Content="Добавить аватар" 
+                                        Command="{Binding AddAvatarCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                                 <Label>Имя</Label>
                                 <TextBox x:Name="Name"
                                          Margin="10, 0, 10, 10"
@@ -86,6 +89,11 @@
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel>
+                                                <TextBlock Text="Аватар"/>
+                                                <Image MaxHeight="540"
+                                                       MaxWidth="320"
+                                                       Source="{Binding AvatarImage}"/>
+                                                
                                                 <TextBlock Text="Имя"/>
                                                 <TextBlock Text="{Binding Name}"/>
 
@@ -108,7 +116,7 @@
                         </Grid>
                     </TabItem>
                     <!--#endregion-->
-                    
+
                     <!--#region // ПРОГРЕСС:-->
                     <TabItem Header="Прогресс">
                         <Grid>
@@ -128,33 +136,25 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <ProgressBar Grid.Column="0" 
-                                                 Grid.Row="0" 
-                                                 Height="30" Margin="10"
-                                                 Value="{Binding Source={StaticResource myVM}, Path=ProgressView}"/>
-                                    <CheckBox Grid.Column="1" 
-                                              Grid.Row="0" 
-                                              IsChecked="{Binding Source={StaticResource myVM}, Path=StatusProgeressView}"/>
-                                    
                                     <StackPanel Grid.ColumnSpan="2" Grid.Row="1">
                                         <TextBox Text="{Binding Source={StaticResource myVM}, Path=TaskView}"
                                                  Height="50"/>
                                     </StackPanel>
-                                    
+
                                     <StackPanel Grid.ColumnSpan="2" Grid.Row="2" Orientation="Horizontal">
                                         <DatePicker SelectedDate="{Binding Source={StaticResource myVM}, Path=StartView, Mode=TwoWay}"/>
                                         <DatePicker SelectedDate="{Binding Source={StaticResource myVM}, Path=FinishView, Mode=TwoWay}"/>
                                         <Button Height="30" 
                                                 Width="50" 
                                                 Content="Добавить" 
-                                                Command="{Binding AddTaskInProgressCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                                Command="{Binding AddTaskInListCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                                         <Button Height="30"
                                                 Width="50"
                                                 Content="Сохранить" Command="{Binding SaveChangesTaskCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                     </StackPanel>
                                 </Grid>
                             </Grid>
-                            
+
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
                                     <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=ToDoListView}"
@@ -178,10 +178,12 @@
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="2">
                                                         <Button Height="20"
-                                                                Width="20" 
+                                                                Width="50" 
+                                                                Content="Удалить"
                                                                 Command="{Binding DeleteSelectTaskCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                                                         <Button Height="20"
-                                                                Width="20" 
+                                                                Width="50" 
+                                                                Content="Изменить"
                                                                 Command="{Binding UpdateTaskCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                                     </StackPanel>
                                                 </Grid>
@@ -193,7 +195,7 @@
                         </Grid>
                     </TabItem>
                     <!--#endregion-->
-                    
+
                     <!--#region // РЕФЕРЕНСЫ-->
                     <TabItem Header="Реверенсы">
                         <Grid>
@@ -226,7 +228,7 @@
                         </Grid>
                     </TabItem>
                     <!--#endregion-->
-                    
+
                     <!--#region // ФАЙЛЫ:-->
                     <TabItem Header="Файлы">
                         <Grid>
@@ -267,7 +269,7 @@
                         </Grid>
                     </TabItem>
                     <!--#endregion-->
-                    
+
                     <!--#region // РЕНДЕР:-->
                     <TabItem Header="Рендер">
                         <Grid>
@@ -281,7 +283,7 @@
                                         Command="{Binding AddRenderCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                             </StackPanel>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1">
-                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=GetRenderView}"
+                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=RenderView}"
                                           SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectItemInRender}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
@@ -302,9 +304,9 @@
                 </TabControl>
             </Grid>
             <!--#endregion -->
-            
+
             <!--#region // Основное меню - персонажы: -->
-            <ListView HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+            <ListView x:Name="listView" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                       ItemsSource="{Binding Source={StaticResource myVM}, Path=CharactersView}"
                       SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectCharacterInView}"
                       SelectionMode="Single">
@@ -316,10 +318,10 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel>
-                            <Rectangle Fill="Azure" 
-                                       MinHeight="220"
-                                       MinWidth="180"/>
+                        <StackPanel x:Name="Menu">
+                            <Image Source="{Binding AvatarImage}"
+                                   MaxHeight="220"
+                                   MaxWidth="180"/>
                             <TextBlock Text="{Binding Name}"/>
                             <TextBlock Text="{Binding LastName}"/>
                             <TextBlock Text="{Binding Age}"/>
