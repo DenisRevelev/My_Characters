@@ -46,7 +46,7 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext context = new ApplicationContext())
             {
-                var getCharacters = context.Biographies.ToList();
+                IEnumerable<BiographyModel> getCharacters = context.Biographies.AsNoTracking().ToList();
                 CharactersView = new ObservableCollection<BiographyModel>(getCharacters);
             }
         }
@@ -335,7 +335,6 @@ namespace My_Characters.ViewModels
                 var bio = await db.Biographies.Where(b => b.Id == SelectCharacterInView.Id).ToListAsync();
                 BiographyCharacterView = new ObservableCollection<BiographyModel>(bio);
             }
-            await GetProgressAsync();
             await GetToDoListAsync();
             await GetReferensecAsync();
             await GetSourceFilesAsync();
@@ -359,7 +358,6 @@ namespace My_Characters.ViewModels
         #region // Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
 
         #region // Общие поля:
-
         private string? _task;
         public string? TaskView
         {
@@ -389,6 +387,21 @@ namespace My_Characters.ViewModels
             {
                 _finish = value;
                 OnPropertyChanged();
+            }
+        }
+
+        private ToDoListModel _selectItemInToDoList;
+        public ToDoListModel SelectItemInToDoView
+        {
+            get => _selectItemInToDoList;
+            set
+            {
+                if (value != null)
+                {
+                    _selectItemInToDoList = value;
+                    OnPropertyChanged();
+                    SaveCheckTaskAsync();
+                }
             }
         }
         #endregion
@@ -448,21 +461,7 @@ namespace My_Characters.ViewModels
         }
         #endregion
 
-        private ToDoListModel _selectItemInToDoList;
-        public ToDoListModel SelectItemInToDoView
-        {
-            get => _selectItemInToDoList;
-            set
-            {
-                if (value != null)
-                {
-                    _selectItemInToDoList = value;
-                    OnPropertyChanged();
-                    SaveCheckTaskAsync();
-                }
-            }
-        }
-
+        #region // Поставить/снять галку к задаче:
         private async Task SaveCheckTaskAsync()
         {
             using (ApplicationContext db = new ApplicationContext())
@@ -482,9 +481,9 @@ namespace My_Characters.ViewModels
 
                 await db.SaveChangesAsync();
                 await GetToDoListAsync();
-                await GetProgressAsync();
             }
         }
+        #endregion
 
         #region// Изменить задачу:
         private async Task UpdateTaskAsync()
@@ -556,6 +555,7 @@ namespace My_Characters.ViewModels
                 }
             }
         }
+
         private RelayCommand? _deleteSelectTask { get; set; }
         public RelayCommand DeleteSelectTaskCommand
         {
@@ -569,22 +569,26 @@ namespace My_Characters.ViewModels
             }
         }
         #endregion
+        #endregion
 
-        #region 
-        private async Task GetProgressAsync()
+        #region // Добавить, удалить данные в разделе "РЕФЕРЕНСЫ":
+
+        #region // Общие:
+        private ReferenceModel _selectInReferencesView;
+        public ReferenceModel SelectInReferencesView
         {
-            using (ApplicationContext db = new ApplicationContext())
+            get => _selectInReferencesView;
+            set
             {
-                var getProgressesForCharacter = await db.ToDoLists.Where(p => p.BiographyId == SelectCharacterInView.Id).ToListAsync();
-                
-                await db.SaveChangesAsync();
+                if (value != null)
+                {
+                    _selectInReferencesView = value;
+                    OnPropertyChanged();
+                }
             }
         }
         #endregion
 
-        #endregion
-
-        #region // Добавить, удалить данные в разделе "РЕФЕРЕНСЫ":
         #region // Получить референсы:
         private ObservableCollection<ReferenceModel> _references = new ObservableCollection<ReferenceModel>();
         public ObservableCollection<ReferenceModel> ReferencesView
@@ -608,19 +612,21 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить референсов:
-
         private byte[]? _referenceInByte { get; set; }
         public byte[]? ReferenceInByte
         {
             get => _referenceInByte;
             set
             {
-                _referenceInByte = value;
-                OnPropertyChanged();
+                if (value != null)
+                {
+                    _referenceInByte = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
-        private async Task OpenFileExplorer()
+        private async Task OpenFileExplorerAsync()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Files (*.png)|*.png|All files (*.*)|*.*";
@@ -652,7 +658,7 @@ namespace My_Characters.ViewModels
             {
                 return _openFileDialog ?? new RelayCommand(async parameter =>
                 {
-                    await OpenFileExplorer();
+                    await OpenFileExplorerAsync();
                     await GetReferensecAsync();
                 });
             }
@@ -660,18 +666,7 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Удалить референсы:
-        private ReferenceModel _selectInReferencesView;
-        public ReferenceModel SelectInReferencesView
-        {
-            get => _selectInReferencesView;
-            set
-            {
-                _selectInReferencesView = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private async Task DeleteReference(ReferenceModel selectItem)
+        private async Task DeleteReferenceAsync(ReferenceModel selectItem)
         {
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -690,7 +685,7 @@ namespace My_Characters.ViewModels
             {
                 return _deleteSelectReferenc ?? new RelayCommand(async parameter =>
                 {
-                    await DeleteReference(SelectInReferencesView);
+                    await DeleteReferenceAsync(SelectInReferencesView);
                     await GetReferensecAsync();
                 });
             }
@@ -699,6 +694,7 @@ namespace My_Characters.ViewModels
         #endregion
 
         #region // Добавить, удалить и изменить данные в разделе "ФАЙЛЫ":
+        #region // Общие:
         private string? _pathFile;
         public string? PathFileView
         {
@@ -724,6 +720,7 @@ namespace My_Characters.ViewModels
                 }
             }
         }
+        #endregion
 
         #region // Получить файлы:
         private ObservableCollection<SourceFileModel> _sourceFiles = new ObservableCollection<SourceFileModel>();
@@ -748,7 +745,7 @@ namespace My_Characters.ViewModels
         }
 
         #region // Добавить файл:
-        private async Task OpenFileDialog()
+        private async Task OpenFileDialogAsync()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Files (*.exe)|*.exe|All files (*.*)|*.*";
@@ -781,17 +778,14 @@ namespace My_Characters.ViewModels
             {
                 return _addSourceFaile ?? new RelayCommand(async parameter =>
                 {
-                    await OpenFileDialog();
+                    await OpenFileDialogAsync();
                 });
             }
         }
         #endregion
 
-        #region // Изменить файл:
-        #endregion
-
         #region // Удалить файл:
-        private async Task DeleteItemInSourceFile(SourceFileModel sourceFile)
+        private async Task DeleteItemInSourceFileAsync(SourceFileModel sourceFile)
         {
             using (ApplicationContext db = new ApplicationContext())
             {
@@ -810,7 +804,7 @@ namespace My_Characters.ViewModels
             {
                 return _deleteSelectItemInSourceFiles ?? new RelayCommand(async parameter =>
                 {
-                    await DeleteItemInSourceFile(SelectItemInSourceFile);
+                    await DeleteItemInSourceFileAsync(SelectItemInSourceFile);
                     await GetSourceFilesAsync();
                 });
             }
@@ -836,10 +830,11 @@ namespace My_Characters.ViewModels
             }
         }
         #endregion
-
         #endregion
 
         #region // Добавить, удалить и изменить данные в разделе "Рендер":
+
+        #region // Общие:
         private byte[]? _renderInByte { get; set; }
         public byte[]? RenderInByte
         {
@@ -850,6 +845,21 @@ namespace My_Characters.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        private RenderModel _selectItemInRender;
+        public RenderModel SelectItemInRender
+        {
+            get => _selectItemInRender;
+            set
+            {
+                if (value != null)
+                {
+                    _selectItemInRender = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
 
         #region // Получить рендеры:
         private ObservableCollection<RenderModel> _getRender = new ObservableCollection<RenderModel>();
@@ -914,24 +924,7 @@ namespace My_Characters.ViewModels
         }
         #endregion
 
-        #region // Изменить рендер
-        #endregion
-
         #region // Удалить рендер:
-        private RenderModel _selectItemInRender;
-        public RenderModel SelectItemInRender
-        {
-            get => _selectItemInRender;
-            set
-            {
-                if (value != null)
-                {
-                    _selectItemInRender = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         private async Task DeleteItemInRenderAsync(RenderModel item)
         {
             using (ApplicationContext db = new ApplicationContext())
