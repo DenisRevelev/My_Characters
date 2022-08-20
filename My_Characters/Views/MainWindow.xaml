@@ -6,7 +6,10 @@
         xmlns:local="clr-namespace:My_Characters.ViewModels"
         xmlns:uscontrl="clr-namespace:My_Characters.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1200" WindowStartupLocation="CenterScreen">
+        Title="MainWindow" 
+        Height="700" 
+        Width="1200" 
+        WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <local:MainWindowViewModel x:Key="myVM"/>
     </Window.Resources>
@@ -21,9 +24,10 @@
         </Grid.RowDefinitions>
 
         <Button Grid.Column="1"
+                Content="Создать персонажа"
                 Height="20"  
                 Width="90"
-                Click="OpenInfoCharacter_Click" />
+                Click="CreateCharacter_Click" />
 
         <StackPanel Grid.RowSpan="2">
             <Button Height="30"/>
@@ -37,7 +41,7 @@
                                     Visibility="Collapsed">
                 <TabControl>
                     <!--#region // БИОГРАФИЯ:-->
-                    <TabItem Header="Биография" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <TabItem x:Name="BiographyTab" Header="Биография">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="300"/>
@@ -48,52 +52,83 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" FlowDirection="RightToLeft">
-                                <Button Height="20" Width="60" Content="Создать" 
-                                        Command="{Binding CreateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
-                                <Button Height="20" Width="60" Content="Изменить" 
-                                        Command="{Binding UpdateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
-                                <Button Height="20" Width="60" Content="Сохранить" 
-                                        Command="{Binding SaveChangesCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" />
-                                <Button Height="20" Width="60" Content="Удалить" 
+                                <Button x:Name="CreateButton" 
+                                        Height="20" 
+                                        Width="60" 
+                                        Content="Создать" 
+                                        Command="{Binding CreateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"
+                                        Click="CreateButton_Click"/>
+                                <Grid>
+                                    <Button x:Name="ChangedButton" 
+                                            Height="20" 
+                                            Width="60" 
+                                            Content="Изменить" 
+                                            Visibility="Visible"
+                                            Command="{Binding UpdateCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"
+                                            Click="ChangedButton_Click"/>
+                                    <Button x:Name="SaveButton" 
+                                            Height="20" 
+                                            Width="60" 
+                                            Content="Сохранить" 
+                                            Visibility="Collapsed"
+                                            Command="{Binding SaveChangesCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" 
+                                            Click="ChangedButton_Click"/>
+                                </Grid>
+                                <Button x:Name="DeleteButtun" 
+                                        Height="20" 
+                                        Width="60" 
+                                        Content="Удалить" 
                                         Command="{Binding DeleteCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                             </StackPanel>
-                            <StackPanel Grid.Row="1">
-                                <Label>Аватар</Label>
-                                <Button Content="Добавить аватар" 
-                                        Command="{Binding AddAvatarCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
-                                <Label>Имя</Label>
-                                <TextBox x:Name="Name"
-                                         Margin="10, 0, 10, 10"
-                                         Text="{Binding Source={StaticResource myVM}, Path=NameView}"/>
-                                <Label>Фамилия</Label>
-                                <TextBox Name="LastName" 
-                                         Margin="10, 0, 10, 10"
-                                         Text="{Binding Source={StaticResource myVM}, Path=LastNameView}"/>
-                                <Label>Возраст</Label>
-                                <TextBox Name="Age" 
-                                         Margin="10, 0, 10, 10"
-                                         Text="{Binding Source={StaticResource myVM}, Path=AgeView}"/>
-                                <Label>Биография</Label>
-                                <TextBox Name="Biography" 
-                                         Margin="10, 0, 10, 10"
-                                         Height="150"
-                                         Text="{Binding Source={StaticResource myVM}, Path=BiographyView}"/>
-                                <Label>Навыки</Label>
-                                <TextBox Name="Skills" 
-                                         Margin="10, 0, 10, 10"
-                                         Height="100"
-                                         Text="{Binding Source={StaticResource myVM}, Path=SkillsView}"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Grid.Row="1">
-                                <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=BiographyCharacterView, UpdateSourceTrigger=PropertyChanged}">
+                            <ScrollViewer Grid.Row="1" 
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel >
+                                    <Label>Аватар</Label>
+                                    <Button x:Name="ChangedPhotoButton" 
+                                            Content="Изменить аватар" 
+                                            Command="{Binding AddAvatarCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+                                    <Label>Имя</Label>
+                                    <TextBox x:Name="NameTextBox"
+                                             Margin="10, 0, 10, 10"
+                                             Text="{Binding Source={StaticResource myVM}, Path=NameView}"/>
+                                    <Label>Фамилия</Label>
+                                    <TextBox x:Name="LastNameTextBox" 
+                                             Margin="10, 0, 10, 10"
+                                             Text="{Binding Source={StaticResource myVM}, Path=LastNameView}"/>
+                                    <Label>Возраст</Label>
+                                    <TextBox x:Name="AgeTextBox" 
+                                             Margin="10, 0, 10, 10"
+                                             Text="{Binding Source={StaticResource myVM}, Path=AgeView}"/>
+                                    <Label>Биография</Label>
+                                    <TextBox x:Name="BiographyTextBox" 
+                                             Margin="10, 0, 10, 10"
+                                             MinHeight="150"
+                                             Height="Auto"
+                                             Text="{Binding Source={StaticResource myVM}, Path=BiographyView}"
+                                             TextWrapping="Wrap"/>
+                                    <Label>Навыки</Label>
+                                    <TextBox x:Name="SkillsTextBox" 
+                                             Margin="10, 0, 10, 10"
+                                             MinHeight="150"
+                                             Height="Auto"
+                                             Text="{Binding Source={StaticResource myVM}, Path=SkillsView}"
+                                             TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                            <ScrollViewer Grid.Column="1" 
+                                          Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto">
+                                <ListView x:Name="InfoPanel" 
+                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                          ItemsSource="{Binding Source={StaticResource myVM}, Path=BiographyCharacterView, UpdateSourceTrigger=PropertyChanged}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel>
                                                 <TextBlock Text="Аватар"/>
-                                                <Image MaxHeight="540"
-                                                       MaxWidth="320"
+                                                <Image Height="540"
+                                                       Width="320"
                                                        Source="{Binding AvatarImage}"/>
-                                                
+
                                                 <TextBlock Text="Имя"/>
                                                 <TextBlock Text="{Binding Name}"/>
 
@@ -104,21 +139,25 @@
                                                 <TextBlock Text="{Binding Age}"/>
 
                                                 <TextBlock Text="Биография"/>
-                                                <TextBlock Text="{Binding Biography}"/>
+                                                <TextBlock Width="{Binding Path=ActualWidth, ElementName=InfoPanel}"
+                                                           Text="{Binding Biography}"
+                                                           TextWrapping="Wrap"/>
 
                                                 <TextBlock Text="Навыки"/>
-                                                <TextBlock Text="{Binding Skills}"/>
+                                                <TextBlock Width="{Binding Path=ActualWidth, ElementName=InfoPanel}"
+                                                           Text="{Binding Skills}"
+                                                           TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                            </StackPanel>
+                            </ScrollViewer>
                         </Grid>
                     </TabItem>
                     <!--#endregion-->
 
-                    <!--#region // ПРОГРЕСС:-->
-                    <TabItem Header="Прогресс">
+                    <!--#region // ЗАДАЧИ:-->
+                    <TabItem x:Name="TaskTab" Header="Задачи">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="120"/>
@@ -144,13 +183,16 @@
                                     <StackPanel Grid.ColumnSpan="2" Grid.Row="2" Orientation="Horizontal">
                                         <DatePicker SelectedDate="{Binding Source={StaticResource myVM}, Path=StartView, Mode=TwoWay}"/>
                                         <DatePicker SelectedDate="{Binding Source={StaticResource myVM}, Path=FinishView, Mode=TwoWay}"/>
-                                        <Button Height="30" 
+                                        <Button x:Name="AddTaskButton"
+                                                Height="30" 
                                                 Width="50" 
                                                 Content="Добавить" 
                                                 Command="{Binding AddTaskInListCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
-                                        <Button Height="30"
+                                        <Button x:Name="SaveTaskButton"
+                                                Height="30"
                                                 Width="50"
-                                                Content="Сохранить" Command="{Binding SaveChangesTaskCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                                Content="Сохранить" 
+                                                Command="{Binding SaveChangesTaskCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                     </StackPanel>
                                 </Grid>
                             </Grid>
@@ -177,13 +219,17 @@
                                                         <TextBlock Text="{Binding Finish}"/>
                                                     </StackPanel>
                                                     <StackPanel Grid.Column="2">
-                                                        <Button Height="20"
+                                                        <Button x:Name="DeleteTaskButton"
+                                                                Height="20"
                                                                 Width="50" 
                                                                 Content="Удалить"
+                                                                CommandParameter="{Binding}"
                                                                 Command="{Binding DeleteSelectTaskCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
-                                                        <Button Height="20"
+                                                        <Button x:Name="ChangeTaskButton"
+                                                                Height="20"
                                                                 Width="50" 
                                                                 Content="Изменить"
+                                                                CommandParameter="{Binding}"
                                                                 Command="{Binding UpdateTaskCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                                     </StackPanel>
                                                 </Grid>
@@ -197,14 +243,16 @@
                     <!--#endregion-->
 
                     <!--#region // РЕФЕРЕНСЫ-->
-                    <TabItem Header="Реверенсы">
+                    <TabItem x:Name="ReferencesTab" Header="Реверенсы">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="60"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <StackPanel>
-                                <Button Height="30" Content="Добавить изображение" 
+                                <Button x:Name="AddReferenceButton"
+                                        Height="30" 
+                                        Content="Добавить изображение" 
                                         Command="{Binding OpenFileDialogCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                             </StackPanel>
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -218,7 +266,9 @@
                                                            MaxHeight="640"
                                                            MaxWidth="820"/>
                                                     <Button Content="Удалить"
-                                                            Height="20" Command="{Binding DeleteSelectReferencCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                                            Height="20" 
+                                                            CommandParameter="{Binding}"
+                                                            Command="{Binding DeleteSelectReferencCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                                 </StackPanel>
                                             </StackPanel>
                                         </DataTemplate>
@@ -230,14 +280,16 @@
                     <!--#endregion-->
 
                     <!--#region // ФАЙЛЫ:-->
-                    <TabItem Header="Файлы">
+                    <TabItem x:Name="FilesTab" Header="Файлы">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="60"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <StackPanel>
-                                <Button Height="30" Content="Добавить файл" 
+                                <Button x:Name="AddFileButton"
+                                        Height="30" 
+                                        Content="Добавить файл" 
                                         Command="{Binding AddSourceFileCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                             </StackPanel>
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -257,8 +309,10 @@
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Content="Удалить"
                                                             Height="25" 
+                                                            CommandParameter="{Binding}"
                                                             Command="{Binding DeleteItemInSourceFileCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                                                     <Button Content="Запустить"
+                                                            CommandParameter="{Binding}"
                                                             Height="25" Command="{Binding StartProcessCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                                                 </StackPanel>
                                             </Grid>
@@ -271,16 +325,17 @@
                     <!--#endregion-->
 
                     <!--#region // РЕНДЕР:-->
-                    <TabItem Header="Рендер">
+                    <TabItem x:Name="RendersTab" Header="Рендер">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="50"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <StackPanel>
-                                <Button Content="Добавить Рендер"
+                                <Button x:Name="AddRenderButton"
+                                        Content="Добавить Рендер"
                                         Height="30" 
-                                        Command="{Binding AddRenderCommand, Mode=OneWay, Source={StaticResource myVM}}" />
+                                        Command="{Binding AddRenderCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                             </StackPanel>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1">
                                 <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=RenderView}"
@@ -292,6 +347,7 @@
                                                        MaxHeight="1024"
                                                        MaxWidth="920"/>
                                                 <Button Height="15" 
+                                                        CommandParameter="{Binding}"
                                                         Command="{Binding DeleteInRenderCommand, Mode=OneWay, Source={StaticResource myVM}}" />
                                             </StackPanel>
                                         </DataTemplate>
@@ -306,7 +362,7 @@
             <!--#endregion -->
 
             <!--#region // Основное меню - персонажы: -->
-            <ListView x:Name="listView" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+            <ListView x:Name="listViewContent" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                       ItemsSource="{Binding Source={StaticResource myVM}, Path=CharactersView}"
                       SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectCharacterInView}"
                       SelectionMode="Single">
@@ -320,14 +376,18 @@
                     <DataTemplate>
                         <StackPanel x:Name="Menu">
                             <Image Source="{Binding AvatarImage}"
-                                   MaxHeight="220"
-                                   MaxWidth="180"/>
+                                   Height="220"
+                                   Width="180"/>
+                            <Line X1="10" X2="100" Stretch="Fill" StrokeThickness="1" Stroke="CadetBlue" Fill="Black"/>
                             <TextBlock Text="{Binding Name}"/>
                             <TextBlock Text="{Binding LastName}"/>
                             <TextBlock Text="{Binding Age}"/>
-                            <Button Height="30"
+                            <Button x:Name="OpenPersen" 
+                                    Content="Открыть"
+                                    Height="30"
                                     Width="90"
-                                    Click="OpenInfoCharacter_Click" 
+                                    Click="OpenPersen_Click"
+                                    CommandParameter="{Binding}"
                                     Command="{Binding GetBioCharacterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
                         </StackPanel>
                     </DataTemplate>

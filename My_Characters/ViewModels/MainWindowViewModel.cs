@@ -316,7 +316,7 @@ namespace My_Characters.ViewModels
         #endregion
         #endregion
 
-        #region // ПОЛУЧИТЬ БИОГРАФИЮ ПЕРСОНАЖА:
+        #region // ПОЛУЧИТЬ ИНФОРМАЦИЮ О ПЕРСОНАЖЕ:
         private ObservableCollection<BiographyModel> _biographyCharacterView = new ObservableCollection<BiographyModel>();
         public ObservableCollection<BiographyModel> BiographyCharacterView
         {
@@ -348,14 +348,16 @@ namespace My_Characters.ViewModels
             {
                 return _getBioCharacter ?? new RelayCommand(async parameter =>
                 {
+                    var item = (BiographyModel)parameter;
+                    SelectCharacterInView = item;
                     await GetBiographyCharacterAsync();
-                });
+                }, patameter => patameter is BiographyModel);
             }
         }
         #endregion
         #endregion
 
-        #region // Добавить, удалить и изменить данные в разделе "ПРОГРЕСС":
+        #region // Добавить, удалить и изменить данные в разделе "ЗАДАЧИ":
 
         #region // Общие поля:
         private string? _task;
@@ -508,8 +510,10 @@ namespace My_Characters.ViewModels
             {
                 return _updateTask ?? new RelayCommand(async parameter =>
                 {
+                    var item = (ToDoListModel)parameter;
+                    SelectItemInToDoView = item;
                     await UpdateTaskAsync();
-                });
+                }, parameter => parameter is ToDoListModel);
             }
         }
 
@@ -563,9 +567,11 @@ namespace My_Characters.ViewModels
             {
                 return _deleteSelectTask ?? new RelayCommand(async parameter =>
                 {
+                    var item = (ToDoListModel)parameter;
+                    SelectItemInToDoView = item;
                     await DeleteSelectTaskAsync(SelectItemInToDoView);
                     await GetToDoListAsync();
-                });
+                }, parameter => parameter is ToDoListModel);
             }
         }
         #endregion
@@ -685,9 +691,11 @@ namespace My_Characters.ViewModels
             {
                 return _deleteSelectReferenc ?? new RelayCommand(async parameter =>
                 {
+                    var item = (ReferenceModel)parameter;
+                    SelectInReferencesView = item;
                     await DeleteReferenceAsync(SelectInReferencesView);
                     await GetReferensecAsync();
-                });
+                }, parameter => parameter is ReferenceModel);
             }
         }
         #endregion
@@ -804,9 +812,11 @@ namespace My_Characters.ViewModels
             {
                 return _deleteSelectItemInSourceFiles ?? new RelayCommand(async parameter =>
                 {
+                    var item = (SourceFileModel)parameter;
+                    SelectItemInSourceFile = item;
                     await DeleteItemInSourceFileAsync(SelectItemInSourceFile);
                     await GetSourceFilesAsync();
-                });
+                }, parameter => parameter is SourceFileModel);
             }
         }
         #endregion
@@ -825,8 +835,10 @@ namespace My_Characters.ViewModels
             {
                 return _startProcess ?? new RelayCommand(async parameter =>
                 {
+                    var item = (SourceFileModel)parameter;
+                    SelectItemInSourceFile = item;
                     await StartProcessAsync();
-                });
+                }, parameter => parameter is SourceFileModel);
             }
         }
         #endregion
@@ -942,9 +954,11 @@ namespace My_Characters.ViewModels
             {
                 return _deleteInRender ?? new RelayCommand(async parameter =>
                 {
+                    var item = (RenderModel)parameter;
+                    SelectItemInRender = item;
                     await DeleteItemInRenderAsync(SelectItemInRender);
                     await GetRenderAsync();
-                });
+                }, parameter => parameter is RenderModel);
             }
         }
         #endregion
