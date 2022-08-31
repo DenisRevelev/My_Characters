@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using My_Characters.Context;
 
@@ -11,9 +12,10 @@ using My_Characters.Context;
 namespace My_Characters.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220826185105_AddNewModel_RankModel")]
+    partial class AddNewModel_RankModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,10 +68,15 @@ namespace My_Characters.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("BiographyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BiographyId");
 
                     b.ToTable("Ranks");
                 });
@@ -167,6 +174,17 @@ namespace My_Characters.Migrations
                     b.ToTable("ToDoLists");
                 });
 
+            modelBuilder.Entity("My_Characters.Models.RankModel", b =>
+                {
+                    b.HasOne("My_Characters.Models.BiographyModel", "Biography")
+                        .WithMany("RankNavigation")
+                        .HasForeignKey("BiographyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Biography");
+                });
+
             modelBuilder.Entity("My_Characters.Models.ReferenceModel", b =>
                 {
                     b.HasOne("My_Characters.Models.BiographyModel", "Biography")
@@ -214,6 +232,8 @@ namespace My_Characters.Migrations
             modelBuilder.Entity("My_Characters.Models.BiographyModel", b =>
                 {
                     b.Navigation("ProgressNavigation");
+
+                    b.Navigation("RankNavigation");
 
                     b.Navigation("ReferenceNavigation");
 

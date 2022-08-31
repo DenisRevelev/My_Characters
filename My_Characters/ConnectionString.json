@@ -1,5 +1,5 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Data Source=DESKTOP-CS338HB\\SQLEXPRESS01;Integrated Security=True;Connect Timeout=30;Encrypt=False;Database=My_Characters;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+    "DefaultConnection": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;Database=My_Characters;MultiSubnetFailover=False"
   }
 }

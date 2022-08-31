@@ -25,6 +25,7 @@ namespace My_Characters.ViewModels
         public MainWindowViewModel()
         {
             GetAllData();
+            GetFiltersAsync();
             StartView = DateTime.Now;
             FinishView = DateTime.Now;
         }
@@ -50,11 +51,23 @@ namespace My_Characters.ViewModels
                 CharactersView = new ObservableCollection<BiographyModel>(getCharacters);
             }
         }
+
+        private RelayCommand _getAllCharacters;
+        public RelayCommand GetAllCharactersCommand
+        {
+            get
+            {
+                return _getAllCharacters ?? new RelayCommand(parameter =>
+                {
+                    GetAllData();
+                });
+            }
+        }
         #endregion
 
-        #region // Добавить, удалить и изменить данные в разделе "БИОГРАФИЯ":
+        #region // Добавить, удалить и изменить данные в разделе "БИОГРАФИЯ"  = СОЗДАТЬ ПЕРСОНАЖА:
 
-        #region // ДОБАВИТЬ БИОГРАФИЮ ПЕРСОНАЖА = СОЗДАТЬ ПЕРСОНАЖА:
+        #region // ДОБАВИТЬ БИОГРАФИЮ ПЕРСОНАЖА
 
         #region // Общие поля:
         private string? _name;
@@ -86,6 +99,17 @@ namespace My_Characters.ViewModels
             set
             {
                 _age = value;
+                OnPropertyChanged();
+            }
+        }
+        private RankModel _selectedRankItemInCombobox;
+
+        public RankModel SelectedRankItemInComboboxView
+        {
+            get => _selectedRankItemInCombobox;
+            set
+            {
+                _selectedRankItemInCombobox = value;
                 OnPropertyChanged();
             }
         }
@@ -153,7 +177,8 @@ namespace My_Characters.ViewModels
                     Age = AgeView,
                     Biography = BiographyView,
                     Skills = SkillsView,
-                    AvatarImage = AvararView
+                    AvatarImage = AvararView,
+                    Rank = SelectedRankItemInComboboxView.Name
                 };
 
                 await db.Biographies.AddAsync(createBio);
@@ -229,6 +254,7 @@ namespace My_Characters.ViewModels
                     item.Age = AgeView;
                     item.Biography = BiographyView;
                     item.Skills = SkillsView;
+                    item.Rank = SelectedRankItemInComboboxView.Name;
                 }
                 await db.SaveChangesAsync();
             }
@@ -962,6 +988,188 @@ namespace My_Characters.ViewModels
             }
         }
         #endregion
+        #endregion
+
+        #region // Добавить, удалить фильтры:
+
+        #region // Общие поля:
+        private string? _nameRang;
+        public string? NameRangView
+        {
+            get => _nameRang;
+            set
+            {
+                if (value != null)
+                {
+                    _nameRang = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+
+        #region // Получить фильтры:
+        private ObservableCollection<RankModel> _getRank = new ObservableCollection<RankModel>();
+        public ObservableCollection<RankModel> FilterRankView
+        {
+            get => _getRank;
+            set
+            {
+                if (_getRank != null)
+                {
+                    _getRank = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private async Task GetFiltersAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var getFilter = await db.Ranks.ToListAsync();
+                FilterRankView = new ObservableCollection<RankModel>(getFilter);
+            }
+        }
+        #endregion
+
+        #region // Добавить фильтр:
+        private async Task AddFilterRankAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var createFilterRank = new RankModel()
+                { 
+                    Name = NameRangView
+                };
+                await db.AddAsync(createFilterRank);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private RelayCommand _addFilterRank { get; set; }
+        public RelayCommand AddFilterRankCommand
+        {
+            get
+            {
+                return _addFilterRank ?? new RelayCommand(async parameter =>
+                {
+                    await AddFilterRankAsync();
+                    await GetFiltersAsync();
+                });
+            }
+        }
+        #endregion
+
+        #region // Удалить фильтр:
+        private async Task DeleteFiltersAsync(RankModel model)
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                if (model != null)
+                {
+                    db.Ranks.Remove(model);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        private RelayCommand _deleteFilter { get; set; }
+        public RelayCommand DeleteFilterCommand
+        {
+            get
+            {
+                return _deleteFilter ?? new RelayCommand(async parameter =>
+                {
+                    var item = (RankModel)parameter;
+                    SelectedFilterInView = item;
+                    await DeleteFiltersAsync(SelectedFilterInView);
+                    GetAllData();
+                }, parameter => parameter is RankModel);
+            }
+        }
+        #endregion
+
+        #region // Изменить фильтр:
+        private string? _nameFilter;
+        private void UpdateFilter()
+        {
+            NameRangView = SelectedFilterInView.Name;
+            _nameFilter = SelectedFilterInView.Name;
+        }
+
+        private RelayCommand _updateFilter;
+        public RelayCommand UpdateFilterCommand
+        {
+            get
+            {
+                return _updateFilter ?? new RelayCommand(parameter =>
+                {
+                    var item = (RankModel)parameter;
+                    SelectedFilterInView = item;
+                    UpdateFilter();
+                }, parameter => parameter is RankModel);
+            }
+        }
+
+        private async Task SaveUpdateFilterAsync()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var filter = await db.Ranks.Where(f => f.Name == _nameFilter).ToListAsync();
+                var charachters = await db.Biographies.Where(c => c.Rank == _nameFilter).ToListAsync();
+                foreach (var item in filter)
+                {
+                    item.Name = NameRangView;
+                }
+
+                foreach (var item in charachters)
+                {
+                    item.Rank = NameRangView;
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private RelayCommand _saveUpdateFilter;
+        public RelayCommand SaveUpdateFilterCommand
+        {
+            get
+            {
+                return _saveUpdateFilter ?? new RelayCommand(async parameter =>
+                {
+                    await SaveUpdateFilterAsync();
+                    await GetFiltersAsync();
+                });
+            }
+        }
+        #endregion
+
+        #region // Применить фильтр:
+        private RankModel _selectedFilterInView;
+        public RankModel SelectedFilterInView
+        {
+            get => _selectedFilterInView;
+            set
+            {
+                if (value != null)
+                {
+                    _selectedFilterInView = value;
+                    OnPropertyChanged();
+                    ApplyFilter();
+                }
+            }
+        }
+        private void ApplyFilter()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                IEnumerable<BiographyModel> applyFilter = db.Biographies.Where(f => f.Rank == SelectedFilterInView.Name).AsNoTracking().ToList();
+                CharactersView = new ObservableCollection<BiographyModel>(applyFilter);
+            }
+        }
+        #endregion
+
         #endregion
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -19,6 +19,7 @@ namespace My_Characters.Models
         [MaxLength(52)]
         public string? LastName { get; set;}
         public int Age { get; set; }
+        public string? Rank { get; set; }
         public string? Biography {get; set; }
         public string? Skills {get; set; }
 
