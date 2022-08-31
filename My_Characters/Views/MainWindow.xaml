@@ -29,10 +29,41 @@
                 Width="90"
                 Click="CreateCharacter_Click" />
 
-        <StackPanel Grid.RowSpan="2">
-            <Button Height="30"/>
+        <!--#region // Фильтры-->
+        <StackPanel Grid.Row="2">
+            <TextBox Text="{Binding Source={StaticResource myVM}, Path=NameRangView}"/>
+            <Button Content="Добавить класс" Height="30" 
+                    Command="{Binding AddFilterRankCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+            <Button Content="Сохранить" Height="30" 
+                    Command="{Binding SaveUpdateFilterCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+            <Button Content="Сбросить" 
+                    Command="{Binding GetAllCharactersCommand, Mode=OneWay, Source={StaticResource myVM}}"/>
+            <ListView ItemsSource="{Binding Source={StaticResource myVM}, Path=FilterRankView}"
+                      SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectedFilterInView}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="У" 
+                                        Command="{Binding DeleteFilterCommand, Mode=OneWay, Source={StaticResource myVM}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Content="И" 
+                                        Margin="0,0,10,0"
+                                        Command="{Binding UpdateFilterCommand, Mode=OneWay, Source={StaticResource myVM}}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Name}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
-
+        <!--#endregion-->
         <Grid Grid.Column='1' Grid.Row="1">
             <!--#region // Иноформация о персонаже:-->
             <Grid x:Name="infoChatacter" Background="DarkSlateBlue"
@@ -95,6 +126,17 @@
                                     <TextBox x:Name="LastNameTextBox" 
                                              Margin="10, 0, 10, 10"
                                              Text="{Binding Source={StaticResource myVM}, Path=LastNameView}"/>
+                                    <Label>Класс</Label>
+                                    <ComboBox ItemsSource="{Binding Source={StaticResource myVM}, Path=FilterRankView}"
+                                              SelectedItem="{Binding Source={StaticResource myVM}, Path=SelectedRankItemInComboboxView}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                     <Label>Возраст</Label>
                                     <TextBox x:Name="AgeTextBox" 
                                              Margin="10, 0, 10, 10"
@@ -138,6 +180,9 @@
                                                 <TextBlock Text="Возраст"/>
                                                 <TextBlock Text="{Binding Age}"/>
 
+                                                <TextBlock Text="Класс"/>
+                                                <TextBlock Text="{Binding Rank}"/>
+                                                
                                                 <TextBlock Text="Биография"/>
                                                 <TextBlock Width="{Binding Path=ActualWidth, ElementName=InfoPanel}"
                                                            Text="{Binding Biography}"

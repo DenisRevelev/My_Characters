@@ -18,6 +18,7 @@ namespace My_Characters.Context
         public DbSet<SourceFileModel> SourceFiles => Set<SourceFileModel>();
         public DbSet<ReferenceModel> References => Set<ReferenceModel>();
         public DbSet<RenderModel> Renders => Set<RenderModel>();
+        public DbSet<RankModel> Ranks => Set<RankModel>();
 
         private string GetConnectionString()
         {

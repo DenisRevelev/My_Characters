@@ -129,6 +129,12 @@ namespace My_Characters.Views
             ReferencesTab.IsEnabled = true;
             FilesTab.IsEnabled = true;
             RendersTab.IsEnabled = true;
+
+            AddTaskButton.IsEnabled = true;
+            SaveTaskButton.IsEnabled = true;
+            AddReferenceButton.IsEnabled = true;
+            AddRenderButton.IsEnabled = true;
+            AddFileButton.IsEnabled = true;
         }
     }
 }
