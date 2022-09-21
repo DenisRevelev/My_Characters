@@ -37,7 +37,6 @@ namespace My_Characters.Views
             CreateButton.IsEnabled = true;
             ChangedButton.IsEnabled = false;
             SaveButton.IsEnabled = false;
-            DeleteButtun.IsEnabled = false;
 
             ChangedPhotoButton.IsEnabled = false;
 
@@ -78,7 +77,6 @@ namespace My_Characters.Views
             CreateButton.IsEnabled = false;
             ChangedButton.IsEnabled = true;
             SaveButton.IsEnabled = true;
-            DeleteButtun.IsEnabled = true;
 
             ChangedPhotoButton.IsEnabled = true;
 
@@ -121,10 +119,9 @@ namespace My_Characters.Views
             CreateButton.IsEnabled = false;
             ChangedButton.IsEnabled = true;
             SaveButton.IsEnabled = true;
-            DeleteButtun.IsEnabled = true;
 
             ChangedPhotoButton.IsEnabled = true;
-
+            
             TaskTab.IsEnabled = true;
             ReferencesTab.IsEnabled = true;
             FilesTab.IsEnabled = true;

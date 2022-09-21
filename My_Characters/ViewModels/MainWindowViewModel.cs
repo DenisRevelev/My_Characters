@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace My_Characters.ViewModels
 {
@@ -22,12 +23,32 @@ namespace My_Characters.ViewModels
 
         private ImageConvertor _imageConvertor = new ImageConvertor();
         private Bitmap? _image;
+
+        private void CheckCountRank()
+        {
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                var ranks = db.Ranks.Count();
+                if (ranks == 0)
+                {
+                    RankModel rank = new RankModel()
+                    {
+                        Name = "Все"
+                    };
+                    db.Ranks.Add(rank);
+                    db.SaveChanges();
+                }
+                GetFiltersAsync();
+            }
+        }
         public MainWindowViewModel()
         {
             GetAllData();
             GetFiltersAsync();
-            StartView = DateTime.Now;
-            FinishView = DateTime.Now;
+            StartView = DateTime.Today;
+            FinishView = DateTime.Today;
+
+            CheckCountRank();
         }
 
         #region // Получить всех персонажей для главной страницы:
@@ -102,15 +123,18 @@ namespace My_Characters.ViewModels
                 OnPropertyChanged();
             }
         }
-        private RankModel _selectedRankItemInCombobox;
 
+        private RankModel _selectedRankItemInCombobox;
         public RankModel SelectedRankItemInComboboxView
         {
             get => _selectedRankItemInCombobox;
             set
             {
-                _selectedRankItemInCombobox = value;
-                OnPropertyChanged();
+                if (value != null)
+                {
+                    _selectedRankItemInCombobox = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -333,10 +357,12 @@ namespace My_Characters.ViewModels
             {
                 return _deleteCharacter ?? new RelayCommand(async parameter =>
                 {
+                    var item = (BiographyModel)parameter;
+                    SelectCharacterInView = item;
                     await DeleteCharacterAsync(SelectCharacterInView);
                     await GetBiographyCharacterAsync();
                     GetAllData();
-                });
+                }, parameter => parameter is BiographyModel);
             }
         }
         #endregion
@@ -403,8 +429,11 @@ namespace My_Characters.ViewModels
             get => _start;
             set
             {
-                _start = value;
-                OnPropertyChanged();
+                if (value != null)
+                {
+                    _start = value;
+                    OnPropertyChanged();
+                }
             }
         }
         private DateTime? _finish;
@@ -413,8 +442,11 @@ namespace My_Characters.ViewModels
             get => _finish;
             set
             {
-                _finish = value;
-                OnPropertyChanged();
+                if (value != null)
+                {
+                    _finish = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -993,8 +1025,8 @@ namespace My_Characters.ViewModels
         #region // Добавить, удалить фильтры:
 
         #region // Общие поля:
-        private string? _nameRang;
-        public string? NameRangView
+        private string _nameRang;
+        public string NameRangView
         {
             get => _nameRang;
             set
@@ -1038,12 +1070,17 @@ namespace My_Characters.ViewModels
         {
             using (ApplicationContext db = new ApplicationContext())
             {
-                var createFilterRank = new RankModel()
-                { 
-                    Name = NameRangView
-                };
-                await db.AddAsync(createFilterRank);
-                await db.SaveChangesAsync();
+                if (NameRangView != null)
+                {
+                    var createFilterRank = new RankModel()
+                    {
+                        Name = NameRangView
+                    };
+                    await db.AddAsync(createFilterRank);
+                    await db.SaveChangesAsync();
+                }
+                else
+                    MessageBox.Show("Забыли ввести имя");
             }
         }
 
@@ -1085,6 +1122,7 @@ namespace My_Characters.ViewModels
                     SelectedFilterInView = item;
                     await DeleteFiltersAsync(SelectedFilterInView);
                     GetAllData();
+                    await GetFiltersAsync();
                 }, parameter => parameter is RankModel);
             }
         }
