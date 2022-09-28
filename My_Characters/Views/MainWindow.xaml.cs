@@ -22,6 +22,7 @@ namespace My_Characters.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool _flag = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -29,37 +30,11 @@ namespace My_Characters.Views
 
         private void CreateCharacter_Click(object sender, RoutedEventArgs e)
         {
-            if (infoChatacter.Visibility == Visibility.Collapsed)
-                infoChatacter.Visibility = Visibility.Visible;
-            else infoChatacter.Visibility = Visibility.Collapsed;
+            SetVibilityContentPanel();
 
-            // Активность кнопок в разеделе "БИОГРАФИЯ"
-            CreateButton.IsEnabled = true;
-            ChangedButton.IsEnabled = false;
-            SaveButton.IsEnabled = false;
-
-            ChangedPhotoButton.IsEnabled = false;
-
-            // Активность кладок табменю
-            TaskTab.IsEnabled = false;
-            ReferencesTab.IsEnabled = false;
-            FilesTab.IsEnabled = false;
-            RendersTab.IsEnabled = false;
-
-            // Активность кнопок для раздела "ЗАДАЧИ"
-            AddTaskButton.IsEnabled = false;
-            SaveTaskButton.IsEnabled = false;
-
-            // Активность кнопок раздела "РЕФЕРЕНСЫ"
-            AddReferenceButton.IsEnabled = false;
-
-            // Активность кнопок раздела "ФАЙЛЫ"
-            AddFileButton.IsEnabled = false;
-
-            // Активность кнопок раздела "РЕНДЕР"
-            AddRenderButton.IsEnabled = false;
-
-            // Очистить поля ввода, когда создается персонаж
+            _flag = false;
+            SetEnabledButton();
+           
             NameTextBox.Text = string.Empty;
             LastNameTextBox.Text = string.Empty;
             AgeTextBox.Text = string.Empty;
@@ -69,35 +44,10 @@ namespace My_Characters.Views
 
         private void OpenPersen_Click(object sender, RoutedEventArgs e)
         {
-            if (infoChatacter.Visibility == Visibility.Collapsed)
-                infoChatacter.Visibility = Visibility.Visible;
-            else infoChatacter.Visibility = Visibility.Collapsed;
+            SetVibilityContentPanel();
 
-            // Активность кнопок в разеделе "БИОГРАФИЯ"
-            CreateButton.IsEnabled = false;
-            ChangedButton.IsEnabled = true;
-            SaveButton.IsEnabled = true;
-
-            ChangedPhotoButton.IsEnabled = true;
-
-            // Активность кладок табменю
-            TaskTab.IsEnabled = true;
-            ReferencesTab.IsEnabled = true;
-            FilesTab.IsEnabled = true;
-            RendersTab.IsEnabled = true;
-
-            // Активность кнопок для раздела "ЗАДАЧИ"
-            AddTaskButton.IsEnabled = true;
-            SaveTaskButton.IsEnabled = true;
-
-            // Активность кнопок раздела "РЕФЕРЕНСЫ"
-            AddReferenceButton.IsEnabled = true;
-
-            // Активность кнопок раздела "ФАЙЛЫ"
-            AddFileButton.IsEnabled = true;
-
-            // Активность кнопок раздела "РЕНДЕР"
-            AddRenderButton.IsEnabled = true;
+            _flag = true;
+            SetEnabledButton();
         }
 
         private void ChangedButton_Click(object sender, RoutedEventArgs e)
@@ -116,22 +66,75 @@ namespace My_Characters.Views
 
         private void CreateButton_Click(object sender, RoutedEventArgs e)
         {
-            CreateButton.IsEnabled = false;
-            ChangedButton.IsEnabled = true;
-            SaveButton.IsEnabled = true;
+            _flag = true;
+            SetEnabledButton();
+        }
 
-            ChangedPhotoButton.IsEnabled = true;
+        private void SetVibilityContentPanel()
+        {
+            if (infoChatacter.Visibility == Visibility.Collapsed)
+                infoChatacter.Visibility = Visibility.Visible;
+            else infoChatacter.Visibility = Visibility.Collapsed;
+        }
+        private void SetEnabledButton()
+        {
             
-            TaskTab.IsEnabled = true;
-            ReferencesTab.IsEnabled = true;
-            FilesTab.IsEnabled = true;
-            RendersTab.IsEnabled = true;
+            if (_flag == false)
+            {
+                // Активность кнопок в разеделе "БИОГРАФИЯ"
+                CreateButton.IsEnabled = true;
+                ChangedButton.IsEnabled = false;
+                SaveButton.IsEnabled = false;
 
-            AddTaskButton.IsEnabled = true;
-            SaveTaskButton.IsEnabled = true;
-            AddReferenceButton.IsEnabled = true;
-            AddRenderButton.IsEnabled = true;
-            AddFileButton.IsEnabled = true;
+                ChangedPhotoButton.IsEnabled = false;
+
+                // Активность кладок табменю
+                TaskTab.IsEnabled = false;
+                ReferencesTab.IsEnabled = false;
+                FilesTab.IsEnabled = false;
+                RendersTab.IsEnabled = false;
+
+                // Активность кнопок для раздела "ЗАДАЧИ"
+                AddTaskButton.IsEnabled = false;
+                SaveTaskButton.IsEnabled = false;
+
+                // Активность кнопок раздела "РЕФЕРЕНСЫ"
+                AddReferenceButton.IsEnabled = false;
+
+                // Активность кнопок раздела "ФАЙЛЫ"
+                AddFileButton.IsEnabled = false;
+
+                // Активность кнопок раздела "РЕНДЕР"
+                AddRenderButton.IsEnabled = false;
+            }
+            else
+            {
+                // Активность кнопок в разеделе "БИОГРАФИЯ"
+                CreateButton.IsEnabled = false;
+                ChangedButton.IsEnabled = true;
+                SaveButton.IsEnabled = true;
+
+                ChangedPhotoButton.IsEnabled = true;
+
+                // Активность кладок табменю
+                TaskTab.IsEnabled = true;
+                ReferencesTab.IsEnabled = true;
+                FilesTab.IsEnabled = true;
+                RendersTab.IsEnabled = true;
+
+                // Активность кнопок для раздела "ЗАДАЧИ"
+                AddTaskButton.IsEnabled = true;
+                SaveTaskButton.IsEnabled = true;
+
+                // Активность кнопок раздела "РЕФЕРЕНСЫ"
+                AddReferenceButton.IsEnabled = true;
+
+                // Активность кнопок раздела "ФАЙЛЫ"
+                AddFileButton.IsEnabled = true;
+
+                // Активность кнопок раздела "РЕНДЕР"
+                AddRenderButton.IsEnabled = true;
+            }
         }
     }
 }

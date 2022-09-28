@@ -8,8 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -772,6 +774,17 @@ namespace My_Characters.ViewModels
             }
         }
 
+        private string? _nameFile;
+        public string? NameFileView
+        {
+            get => _nameFile;
+            set
+            {
+                _nameFile = value;
+                OnPropertyChanged();
+            }
+        }
+
         private SourceFileModel _selectItemInSourceFile;
 
         public SourceFileModel SelectItemInSourceFile
@@ -820,6 +833,7 @@ namespace My_Characters.ViewModels
             {
 
                 PathFileView = openFileDialog.FileName;
+                NameFileView = Path.GetFileName(openFileDialog.FileName.Replace(".exe", ""));
 
                 using (ApplicationContext db = new ApplicationContext())
                 {
@@ -828,7 +842,8 @@ namespace My_Characters.ViewModels
                     {
                         item.SourceFileNavigation = new List<SourceFileModel>() { new SourceFileModel()
                         {
-                            Path = PathFileView
+                            Path = PathFileView,
+                            Name = NameFileView
                         }};
                     }
                     await db.SaveChangesAsync();

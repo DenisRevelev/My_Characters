@@ -405,7 +405,8 @@
                                                     <ColumnDefinition Width="150"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Path}"/>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Margin="5,0"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Height="30" 

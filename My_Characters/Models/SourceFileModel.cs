@@ -11,6 +11,7 @@ namespace My_Characters.Models
         // Зависимая сущность от BiographyModel. Связь один ко многим.
         public int Id { get; set; }
         public string? Path { get; set; }
+        public string? Name { get; set; }
 
         // Внешний ключ.
         public int BiographyId { get; set; }
